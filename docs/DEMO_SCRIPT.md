@@ -50,6 +50,8 @@ Language: English audio with English captions. Optional Chinese captions may app
 
 > Every action cites calculation or assumption evidence. The interface keeps four boundaries visible: user facts, editable assumptions, deterministic calculations, and AI judgment. That makes the recommendation challengeable instead of merely persuasive.
 
+> The final audit strip exposes the model name, the forced tool workflow, and both OpenAI response IDs as proof of a live run.
+
 ## 2:35–2:45 — Close
 
 **Screen:** Return to the hero and switch briefly to Chinese, then back to English.

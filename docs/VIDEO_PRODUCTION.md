@@ -4,6 +4,12 @@ Target: **2:35–2:50**, English voiceover, public YouTube upload, 1080p, readab
 
 Use the narration in [`DEMO_SCRIPT.md`](DEMO_SCRIPT.md). Do not describe the fallback as an AI result. Record the final product segment only after the server secret is configured and the green audit strip shows `gpt-5.6`, `forced_function_call`, `deterministic_engine`, `strict_structured_output`, and two response IDs.
 
+Prepared assets:
+
+- [`DEMO_CAPTIONS.srt`](DEMO_CAPTIONS.srt) — timed English captions ending at 2:50.
+- [`DEMO_VOICEOVER_SSML.xml`](DEMO_VOICEOVER_SSML.xml) — reproducible Microsoft Zira narration source.
+- `submission-assets/risk-sovereignty-voiceover-draft.wav` — locally generated 2:49.9 narration draft; intentionally ignored by Git because it is a large binary production asset.
+
 ## Shot list
 
 | Time | Picture | Required proof |
