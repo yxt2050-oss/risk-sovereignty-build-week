@@ -10,7 +10,7 @@
 Current handoff state:
 
 - Production site version 3 is public and QA-verified.
-- The complete local Git history is ready; the GitHub repository is still empty because browser/Git Credential Manager authorization is pending.
+- The complete Git history is published to the public GitHub repository, and local `main` matches `origin/main`.
 - Devpost Project Overview and Project Story are saved.
 - Devpost Additional Info is filled in the browser but cannot be saved until the required `/feedback` Session ID is supplied.
 - The project thumbnail is ready locally but still needs upload.
@@ -36,7 +36,7 @@ Current handoff state:
 - [x] 3:2 project thumbnail under 5 MB
 - [x] English demo script, captions, shot list, and draft narration
 - [x] Production version 3 deployed and desktop/mobile QA completed
-- [ ] Source pushed to public GitHub repository
+- [x] Source pushed to public GitHub repository
 - [ ] Production `OPENAI_API_KEY` configured as a secret
 - [ ] Real GPT-5.6 production call verified
 - [ ] Under-three-minute video uploaded
