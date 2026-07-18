@@ -30,7 +30,7 @@ test("server-renders the Risk Sovereignty experience", async () => {
   const html = await response.text();
   assert.match(html, /<title>Risk Sovereignty \| AI Stress Test for Small Businesses<\/title>/i);
   assert.match(html, /RISK SOVEREIGNTY/);
-  assert.match(html, /哪一条命先断/);
+  assert.match(html, /What breaks first when the world stops cooperating/);
   assert.match(html, /GPT(?:-|‑|鈥)?5\.6/);
   assert.doesNotMatch(html, /Your site is taking shape|SkeletonPreview|react-loading-skeleton/);
 });
@@ -41,5 +41,5 @@ test("ships semantic controls and the audit boundary", async () => {
   assert.match(html, /type="range"/);
   assert.match(html, /id="ai"/);
   assert.match(html, /id="audit"/);
-  assert.match(html, /生成加固报告/);
+  assert.match(html, /Generate GPT(?:-|‑)?5\.6 survival report/);
 });

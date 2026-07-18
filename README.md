@@ -8,6 +8,8 @@ Most business software optimizes for growth. Risk Sovereignty starts with a diff
 
 Built for the **OpenAI Build Week 2026 — Work & Productivity** track.
 
+Judges: start with the [90-second Judge Guide](docs/JUDGE_GUIDE.md).
+
 ## Why this is not an AI wrapper
 
 The model is deliberately not allowed to invent the financial truth.

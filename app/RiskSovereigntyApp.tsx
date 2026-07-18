@@ -315,7 +315,7 @@ function localFallback(engine: EngineResult, locale: Locale): AIReport {
 }
 
 export default function RiskSovereigntyApp() {
-  const [locale, setLocale] = useState<Locale>("zh");
+  const [locale, setLocale] = useState<Locale>("en");
   const [business, setBusiness] = useState<BusinessInputs>({ ...INDUSTRY_PRESETS.Manufacturing });
   const [stress, setStress] = useState<StressInputs>({ ...DEFAULT_STRESS });
   const [context, setContext] = useState("");
