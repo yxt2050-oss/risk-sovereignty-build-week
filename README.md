@@ -44,6 +44,7 @@ The server route uses the OpenAI Responses API in two passes:
 4. Require a strict JSON Schema report with a causal chain, exactly three phases, critical assumptions, and an owner question.
 
 The API key is read only on the server from `OPENAI_API_KEY`. It is never bundled into the client.
+Successful reports expose the model name, workflow stages, and both OpenAI response IDs in the on-screen audit strip so judges can distinguish a real GPT-5.6 run from the deterministic fallback. The public demo route also applies request-size checks, a per-client demo rate limit, a 75-second upstream timeout, and no-store response headers.
 
 ## Product experience
 
@@ -98,6 +99,8 @@ This disclosure is intentional so judges can distinguish prior concept work from
 ## Responsible-use boundary
 
 Risk Sovereignty is decision support, not accounting, legal, lending, or investment advice. It does not predict the future. Users should validate assumptions and obtain qualified advice before consequential action.
+
+For a public deployment, also set a hard monthly budget and notification threshold on the dedicated OpenAI API project. The in-app rate limiter is defense in depth, not a replacement for a platform spending cap.
 
 ## License
 

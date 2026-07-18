@@ -1198,6 +1198,21 @@ a {
   margin-top: 11px;
 }
 
+.api-audit small {
+  margin-left: 5px;
+  color: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.04em;
+}
+
+.api-audit code[title] {
+  max-width: min(100%, 310px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .audit-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

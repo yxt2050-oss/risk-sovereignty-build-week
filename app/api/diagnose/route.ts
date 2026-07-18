@@ -6,6 +6,10 @@ import {
 } from "@/lib/engine";
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
+const MAX_REQUEST_CHARS = 16_000;
+const RATE_WINDOW_MS = 10 * 60 * 1000;
+const RATE_LIMIT = 6;
+const rateBuckets = new Map<string, { count: number; resetAt: number }>();
 
 const REPORT_SCHEMA = {
   type: "object",
@@ -138,6 +142,7 @@ async function createResponse(apiKey: string, body: Record<string, unknown>) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(75_000),
   });
 
   const payload = (await response.json()) as OpenAIResponse;
@@ -145,6 +150,30 @@ async function createResponse(apiKey: string, body: Record<string, unknown>) {
     throw new Error(payload.error?.message || `OpenAI API error (${response.status})`);
   }
   return payload;
+}
+
+function checkRateLimit(request: Request) {
+  const now = Date.now();
+  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const client = request.headers.get("cf-connecting-ip") || forwarded || "anonymous";
+  const current = rateBuckets.get(client);
+
+  if (!current || current.resetAt <= now) {
+    rateBuckets.set(client, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return null;
+  }
+
+  if (current.count >= RATE_LIMIT) {
+    return Math.max(1, Math.ceil((current.resetAt - now) / 1000));
+  }
+
+  current.count += 1;
+  if (rateBuckets.size > 1_000) {
+    for (const [key, bucket] of rateBuckets) {
+      if (bucket.resetAt <= now) rateBuckets.delete(key);
+    }
+  }
+  return null;
 }
 
 export async function POST(request: Request) {
@@ -160,7 +189,36 @@ export async function POST(request: Request) {
       );
     }
 
-    const submitted = (await request.json()) as RiskCase;
+    const retryAfter = checkRateLimit(request);
+    if (retryAfter) {
+      return Response.json(
+        {
+          error: "Demo rate limit reached. Please try again shortly.",
+          code: "DEMO_RATE_LIMIT",
+        },
+        {
+          status: 429,
+          headers: { "Cache-Control": "no-store", "Retry-After": String(retryAfter) },
+        },
+      );
+    }
+
+    const declaredLength = Number(request.headers.get("content-length") || 0);
+    if (declaredLength > MAX_REQUEST_CHARS) {
+      return Response.json(
+        { error: "Request is too large.", code: "REQUEST_TOO_LARGE" },
+        { status: 413, headers: { "Cache-Control": "no-store" } },
+      );
+    }
+
+    const rawBody = await request.text();
+    if (rawBody.length > MAX_REQUEST_CHARS) {
+      return Response.json(
+        { error: "Request is too large.", code: "REQUEST_TOO_LARGE" },
+        { status: 413, headers: { "Cache-Control": "no-store" } },
+      );
+    }
+    const submitted = JSON.parse(rawBody) as RiskCase;
     const riskCase = normalizeRiskCase(submitted);
     const languageInstruction =
       riskCase.locale === "zh"
@@ -264,7 +322,12 @@ export async function POST(request: Request) {
           reportResponseId: reportResponse.id ?? null,
         },
       },
-      { headers: { "Cache-Control": "no-store" } },
+      {
+        headers: {
+          "Cache-Control": "no-store",
+          "X-Risk-Sovereignty-Model": "gpt-5.6",
+        },
+      },
     );
   } catch (error) {
     return Response.json(

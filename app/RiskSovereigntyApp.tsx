@@ -119,6 +119,9 @@ const copy = {
     generating: "GPT‑5.6 正在调用压力测试工具…",
     waiting: "先让确定性引擎算清楚，再让 AI 挑战你的假设。",
     fallback: "当前未配置 API 密钥，已展示确定性引擎的本地求生草案。部署时配置后会启用真实 GPT‑5.6 工具调用。",
+    verifiedSource: "真实 GPT‑5.6 结果",
+    fallbackSource: "确定性本地草案",
+    apiProof: "API 调用凭证",
     chain: "因果压力链",
     actions: "三段行动",
     assumptions: "关键假设",
@@ -198,6 +201,9 @@ const copy = {
     generating: "GPT‑5.6 is calling the stress-test tool…",
     waiting: "Let the engine establish numerical truth, then let AI challenge the assumptions.",
     fallback: "No API key is configured locally, so this is a deterministic fallback plan. The deployed app enables the real GPT‑5.6 tool workflow once the server secret is set.",
+    verifiedSource: "VERIFIED GPT‑5.6 RESULT",
+    fallbackSource: "DETERMINISTIC FALLBACK",
+    apiProof: "API call proof",
     chain: "Causal stress chain",
     actions: "Three staged actions",
     assumptions: "Critical assumptions",
@@ -582,7 +588,7 @@ export default function RiskSovereigntyApp() {
         ) : (
           <div className="report-grid">
             <article className="report-summary">
-              <span>AI VERDICT</span>
+              <span>{audit ? t.verifiedSource : t.fallbackSource}</span>
               <h3>{report.summary}</h3>
               <p>{report.verdict.why}</p>
               <div><b>{report.verdict.runway}</b><em>{report.verdict.first_failure}</em></div>
@@ -624,7 +630,11 @@ export default function RiskSovereigntyApp() {
         )}
         {audit && (
           <div className="api-audit">
-            <span>{audit.model}</span>{audit.workflow.map((step) => <code key={step}>{step}</code>)}
+            <span>{audit.model}</span>
+            {audit.workflow.map((step) => <code key={step}>{step}</code>)}
+            <small>{t.apiProof}</small>
+            {audit.toolResponseId && <code title="Forced tool-call response ID">tool:{audit.toolResponseId}</code>}
+            {audit.reportResponseId && <code title="Structured report response ID">report:{audit.reportResponseId}</code>}
           </div>
         )}
       </section>
