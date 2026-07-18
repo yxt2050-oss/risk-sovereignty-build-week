@@ -8,7 +8,9 @@ Most business software optimizes for growth. Risk Sovereignty starts with a diff
 
 Built for the **OpenAI Build Week 2026 — Work & Productivity** track.
 
-Judges: start with the [90-second Judge Guide](docs/JUDGE_GUIDE.md).
+**Live demo:** <https://risk-sovereignty.dewy-spool-9953.chatgpt.site>
+
+Judges: start with the [90-second Judge Guide](docs/JUDGE_GUIDE.md). The repository also includes the [under-three-minute demo script](docs/DEMO_SCRIPT.md).
 
 ## Why this is not an AI wrapper
 
