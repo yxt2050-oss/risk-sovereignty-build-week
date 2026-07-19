@@ -7,12 +7,13 @@
 3. Switch industries to see that presets are only editable demo inputs, never hidden benchmarks.
 4. Open **Staged survival guide**. The product does not jump from “fine” to “shut down”; it removes risk in reversible pieces.
 5. Add one sentence of business context and run **GPT-5.6 AI red team**.
-6. Inspect the causal chain, exactly three intervention phases, critical assumptions, and evidence IDs.
-7. End at **Auditable boundary** and verify the separation between input, assumption, calculation, and AI judgment.
+6. Inspect the **Sovereignty gate**. The app does not assume an exit exists: it labels the exit verified, conditional, or absent, separates calculated damage from the owner's tolerable loss, and states a re-entry condition.
+7. Inspect exactly three intervention phases, critical assumptions, preserved upside, and evidence IDs.
+8. End at **Auditable boundary** and verify the separation between input, assumption, calculation, and AI judgment.
 
 ## What GPT-5.6 does
 
-The server forces GPT-5.6 to call `calculate_stress_test`. The model does not own the financial results. The submitted case is normalized, calculated locally, and returned to the reasoning chain as tool output. A second GPT-5.6 pass must produce a strict JSON Schema report.
+The server forces GPT-5.6 to call `calculate_stress_test`. The model does not own the financial results. The submitted case is normalized, calculated locally, and returned to the reasoning chain as tool output. A second GPT-5.6 pass must produce a strict JSON Schema report. The response then passes a deterministic method audit that checks the sovereignty gate, action order, and every evidence reference before it reaches the UI.
 
 Every recommended action includes:
 
@@ -22,11 +23,13 @@ Every recommended action includes:
 - the future option it preserves; and
 - evidence IDs tied to the calculation trace or explicit assumptions.
 
+The method is not risk avoidance. Once downside is bounded and the exit is credible, the final phase must preserve a small route back into the upside. It also refuses outcome bias: a lucky result cannot retroactively make an all-in exposure a good decision.
+
 ## Why this matters
 
 Small-business owners rarely fail because they lack another growth idea. They fail when several ordinary risks become contagious and an irreversible decision arrives before they understand which constraint is actually binding.
 
-Risk Sovereignty changes the objective from **maximize the forecast** to **preserve the next move**.
+Risk Sovereignty changes the objective from **maximize the forecast** to **preserve the next move**, then participate from a position that can survive being wrong. The full operational logic is documented in the [Risk Sovereignty Method](METHODOLOGY.md).
 
 ## Trust boundary
 
@@ -35,7 +38,8 @@ Risk Sovereignty changes the objective from **maximize the forecast** to **prese
 | Business facts | User | AI cannot silently rewrite them |
 | Stress assumptions | User | Visible and editable |
 | Financial outputs | Deterministic engine | Formula-based, testable, and traceable |
-| Interpretation | GPT-5.6 | Challenges assumptions and designs staged action |
+| Interpretation | GPT-5.6 | Tests exit reality, challenges assumptions, and designs staged action |
+| Method audit | Local validator | Rejects invalid evidence and broken action order |
 
 The app is decision support, not accounting, legal, lending, or investment advice.
 

@@ -32,7 +32,7 @@ Language: English audio with English captions. Optional Chinese captions may app
 
 **Voice:**
 
-> Risk Sovereignty avoids the false choice between doing nothing and shutting down. It removes exposure in stages: detect the signal, contain the trend, isolate contagion, and stop the bleeding—while keeping each move as reversible as possible.
+> Risk Sovereignty avoids the false choice between doing nothing and shutting down. It removes exposure in stages, verifies that the claimed exit actually exists, and preserves resources to participate again. This is not hiding from risk; bounded downside is what makes a bold next move possible.
 
 ## 1:30–2:15 — GPT-5.6 red team
 
@@ -40,7 +40,7 @@ Language: English audio with English captions. Optional Chinese captions may app
 
 **Voice:**
 
-> GPT-5.6 is not allowed to invent financial truth. The server forces a strict function call to the stress-test engine. The submitted case is preserved, calculated locally, and returned to the model. A second GPT-5.6 pass must produce a strict structured report: the causal chain, exactly three staged actions, critical assumptions, and one question the owner cannot avoid.
+> GPT-5.6 is not allowed to invent financial truth. The server forces a strict function call to the stress-test engine. A second pass must complete the sovereignty gate—exit reality, tolerable loss, re-entry, preserved upside, and decision quality—before producing exactly three staged actions.
 
 ## 2:15–2:35 — Evidence and audit
 
@@ -48,7 +48,7 @@ Language: English audio with English captions. Optional Chinese captions may app
 
 **Voice:**
 
-> Every action cites calculation or assumption evidence. The interface keeps four boundaries visible: user facts, editable assumptions, deterministic calculations, and AI judgment. That makes the recommendation challengeable instead of merely persuasive.
+> Every action cites calculation or assumption evidence. A local method audit rejects imaginary evidence or broken phase order. The interface keeps user facts, editable assumptions, deterministic calculations, and AI judgment visibly separate.
 
 > The final audit strip exposes the model name, the forced tool workflow, and both OpenAI response IDs as proof of a live run.
 

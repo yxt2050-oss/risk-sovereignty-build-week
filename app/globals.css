@@ -1061,6 +1061,68 @@ a {
   font-size: 8.5px;
 }
 
+.sovereignty-card {
+  grid-column: 1 / -1;
+  padding: 16px 17px;
+  border-color: rgba(44, 230, 162, 0.2) !important;
+  background: linear-gradient(145deg, rgba(44, 230, 162, 0.045), rgba(56, 189, 248, 0.025)) !important;
+}
+
+.sovereignty-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sovereignty-heading > span {
+  padding: 3px 8px;
+  border: 1px solid rgba(255, 201, 107, 0.32);
+  border-radius: 999px;
+  color: var(--amber);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+}
+
+.sovereignty-heading > span[data-status="verified"] {
+  border-color: rgba(44, 230, 162, 0.32);
+  color: var(--mint);
+}
+
+.sovereignty-heading > span[data-status="absent"] {
+  border-color: rgba(255, 90, 110, 0.36);
+  color: var(--red);
+}
+
+.sovereignty-card dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+  margin: 11px 0 0;
+}
+
+.sovereignty-card dl > div {
+  padding: 9px 10px;
+  border: 1px solid rgba(44, 230, 162, 0.1);
+  border-radius: 11px;
+  background: rgba(4, 9, 24, 0.28);
+}
+
+.sovereignty-card dt {
+  color: var(--mint);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+
+.sovereignty-card dd {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 9.5px;
+  line-height: 1.5;
+}
+
 .action-stack {
   grid-column: 1 / -1;
 }

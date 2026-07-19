@@ -4,6 +4,12 @@ import {
   RISK_CASE_JSON_SCHEMA,
   type RiskCase,
 } from "@/lib/engine";
+import {
+  auditMethodologyReport,
+  buildMethodologyReportInstructions,
+  METHODOLOGY_SYSTEM_PROMPT,
+  METHODOLOGY_VERSION,
+} from "@/lib/methodology";
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const MAX_REQUEST_CHARS = 16_000;
@@ -29,6 +35,29 @@ const REPORT_SCHEMA = {
         why: { type: "string" },
       },
       required: ["stage", "first_failure", "runway", "why"],
+    },
+    sovereignty_gate: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        exit_right_status: {
+          type: "string",
+          enum: ["verified", "conditional", "absent"],
+        },
+        exit_reality: { type: "string" },
+        maximum_tolerable_loss: { type: "string" },
+        reentry_condition: { type: "string" },
+        upside_preserved: { type: "string" },
+        decision_quality: { type: "string" },
+      },
+      required: [
+        "exit_right_status",
+        "exit_reality",
+        "maximum_tolerable_loss",
+        "reentry_condition",
+        "upside_preserved",
+        "decision_quality",
+      ],
     },
     causal_chain: {
       type: "array",
@@ -103,6 +132,7 @@ const REPORT_SCHEMA = {
   required: [
     "summary",
     "verdict",
+    "sovereignty_gate",
     "causal_chain",
     "actions",
     "critical_assumptions",
@@ -237,8 +267,7 @@ export async function POST(request: Request) {
     const input: Array<Record<string, unknown>> = [
       {
         role: "system",
-        content:
-          "You are the adversarial risk analyst inside Risk Sovereignty. Your job is to expose the first failure point and preserve the owner's next move. Never promise prediction, never invent financial figures, and never optimize for growth before survival. You must call the deterministic stress-test tool before giving advice.",
+        content: METHODOLOGY_SYSTEM_PROMPT,
       },
       {
         role: "user",
@@ -285,7 +314,7 @@ export async function POST(request: Request) {
     const reportResponse = await createResponse(apiKey, {
       model: "gpt-5.6",
       reasoning: { effort: "high" },
-      instructions: `${languageInstruction} Treat the tool result as numerical truth. Produce three staged actions only: stop bleeding, preserve an exit, rebuild optionality. Every action must cite one or more calculationTrace IDs or assumption IDs. Keep the disclaimer explicit: decision support only, not accounting, legal, lending, or investment advice.`,
+      instructions: buildMethodologyReportInstructions(languageInstruction),
       input,
       tools: [tool],
       tool_choice: "none",
@@ -303,17 +332,30 @@ export async function POST(request: Request) {
 
     const reportText = extractOutputText(reportResponse);
     if (!reportText) throw new Error("GPT-5.6 returned no structured report.");
+    const report = JSON.parse(reportText) as unknown;
+    const allowedEvidenceIds = [
+      ...engine.calculationTrace.map(({ id }) => id),
+      ...engine.assumptions.map(({ id }) => id),
+    ];
+    const methodologyFindings = auditMethodologyReport(report, allowedEvidenceIds);
+    if (methodologyFindings.length > 0) {
+      throw new Error(
+        `GPT-5.6 report failed the Risk Sovereignty audit: ${methodologyFindings.join(", ")}`,
+      );
+    }
 
     return Response.json(
       {
         engine,
-        report: JSON.parse(reportText),
+        report,
         audit: {
           model: "gpt-5.6",
+          methodology: METHODOLOGY_VERSION,
           workflow: [
             "forced_function_call",
             "deterministic_engine",
             "strict_structured_output",
+            "methodology_semantic_audit",
             argumentIntegrity
               ? "argument_integrity_verified"
               : "submitted_input_preserved",

@@ -22,6 +22,14 @@ type AIReport = {
     runway: string;
     why: string;
   };
+  sovereignty_gate: {
+    exit_right_status: "verified" | "conditional" | "absent";
+    exit_reality: string;
+    maximum_tolerable_loss: string;
+    reentry_condition: string;
+    upside_preserved: string;
+    decision_quality: string;
+  };
   causal_chain: Array<{
     order: number;
     event: string;
@@ -49,6 +57,7 @@ type AIReport = {
 
 type Audit = {
   model: string;
+  methodology: string;
   workflow: string[];
   toolResponseId: string | null;
   reportResponseId: string | null;
@@ -123,6 +132,12 @@ const copy = {
     fallbackSource: "确定性本地草案",
     apiProof: "API 调用凭证",
     chain: "因果压力链",
+    sovereigntyGate: "主权关卡 · 先证明退路真实存在",
+    exitRight: "退出权",
+    maxLoss: "最大可承受损失",
+    reentry: "重新进入条件",
+    upside: "保留的上行",
+    decisionQuality: "决策质量",
     actions: "三段行动",
     assumptions: "关键假设",
     ownerQuestion: "留给老板的一问",
@@ -205,6 +220,12 @@ const copy = {
     fallbackSource: "DETERMINISTIC FALLBACK",
     apiProof: "API call proof",
     chain: "Causal stress chain",
+    sovereigntyGate: "Sovereignty gate · prove the exit is real",
+    exitRight: "Exit right",
+    maxLoss: "Maximum tolerable loss",
+    reentry: "Re-entry condition",
+    upside: "Upside preserved",
+    decisionQuality: "Decision quality",
     actions: "Three staged actions",
     assumptions: "Critical assumptions",
     ownerQuestion: "One question for the owner",
@@ -241,6 +262,12 @@ const lifelineNames: Record<LifelineKey, { zh: string; en: string }> = {
 
 const stageIndex = { signal: 0, trend: 1, contagion: 2, emergency: 3 } as const;
 
+const exitStatusCopy = {
+  verified: { zh: "已验证", en: "VERIFIED" },
+  conditional: { zh: "有条件", en: "CONDITIONAL" },
+  absent: { zh: "不存在", en: "ABSENT" },
+} as const;
+
 function localFallback(engine: EngineResult, locale: Locale): AIReport {
   const zh = locale === "zh";
   const failure = lifelineNames[engine.firstFailure][locale];
@@ -255,6 +282,24 @@ function localFallback(engine: EngineResult, locale: Locale): AIReport {
       why: zh
         ? `一次性冲击会吞掉 ${engine.oneTimeShock} 个金额单位，压力后月现金流为 ${engine.stressedNetCashFlow}。`
         : `The one-time shock consumes ${engine.oneTimeShock} units and stressed monthly cash flow is ${engine.stressedNetCashFlow}.`,
+    },
+    sovereignty_gate: {
+      exit_right_status: "conditional",
+      exit_reality: zh
+        ? "当前输入没有给出资产变现时间、解约条款与对手方承诺，退路只能视为有条件存在。"
+        : "The inputs do not establish liquidation time, cancellation terms, or counterparty commitment, so the exit remains conditional.",
+      maximum_tolerable_loss: zh
+        ? `引擎算出一次性冲击为 ${engine.oneTimeShock}，但老板个人能承受的最大损失尚未填写，二者不能混为一谈。`
+        : `The engine calculates a ${engine.oneTimeShock}-unit shock, but the owner's maximum tolerable loss is unspecified; the two are not interchangeable.`,
+      reentry_condition: zh
+        ? "压力后月现金流转正，且现金跑道稳定回到十二个月以上。"
+        : "Stressed monthly cash flow turns positive and runway remains above twelve months.",
+      upside_preserved: zh
+        ? "保留核心客户、关键人员和一笔小额验证预算，条件改善后可分段恢复。"
+        : "Keep core customers, key people, and a small validation budget for staged participation when conditions improve.",
+      decision_quality: zh
+        ? "当前结构把多个普通风险叠成同一现金断点；即使暂时未出事，也不能把幸运当成好决策。"
+        : "The current structure stacks ordinary risks onto one cash failure point; a good recent outcome would not make that a sound process.",
     },
     causal_chain: [
       {
@@ -358,6 +403,13 @@ export default function RiskSovereigntyApp() {
     setAudit(null);
   }
 
+  function switchLocale() {
+    setLocale((current) => (current === "zh" ? "en" : "zh"));
+    setReport(null);
+    setAudit(null);
+    setNotice("");
+  }
+
   async function generateReport() {
     setLoading(true);
     setNotice("");
@@ -438,7 +490,7 @@ export default function RiskSovereigntyApp() {
         </div>
         <div className="nav-spacer" />
         <span className="model-pill">GPT‑5.6 · TOOL CALL</span>
-        <button className="language-toggle" onClick={() => setLocale(locale === "zh" ? "en" : "zh")}>
+        <button className="language-toggle" onClick={switchLocale}>
           {locale === "zh" ? "EN" : "中文"}
         </button>
       </nav>
@@ -602,6 +654,36 @@ export default function RiskSovereigntyApp() {
                 </div>
               ))}
             </article>
+            <article className="sovereignty-card">
+              <div className="sovereignty-heading">
+                <div className="micro-heading">{t.sovereigntyGate}</div>
+                <span data-status={report.sovereignty_gate.exit_right_status}>
+                  {exitStatusCopy[report.sovereignty_gate.exit_right_status][locale]}
+                </span>
+              </div>
+              <dl>
+                <div>
+                  <dt>{t.exitRight}</dt>
+                  <dd>{report.sovereignty_gate.exit_reality}</dd>
+                </div>
+                <div>
+                  <dt>{t.maxLoss}</dt>
+                  <dd>{report.sovereignty_gate.maximum_tolerable_loss}</dd>
+                </div>
+                <div>
+                  <dt>{t.reentry}</dt>
+                  <dd>{report.sovereignty_gate.reentry_condition}</dd>
+                </div>
+                <div>
+                  <dt>{t.upside}</dt>
+                  <dd>{report.sovereignty_gate.upside_preserved}</dd>
+                </div>
+                <div>
+                  <dt>{t.decisionQuality}</dt>
+                  <dd>{report.sovereignty_gate.decision_quality}</dd>
+                </div>
+              </dl>
+            </article>
             <div className="action-stack">
               <div className="micro-heading">{t.actions}</div>
               {report.actions.map((action, index) => (
@@ -631,6 +713,7 @@ export default function RiskSovereigntyApp() {
         {audit && (
           <div className="api-audit">
             <span>{audit.model}</span>
+            <code>{audit.methodology}</code>
             {audit.workflow.map((step) => <code key={step}>{step}</code>)}
             <small>{t.apiProof}</small>
             {audit.toolResponseId && <code title="Forced tool-call response ID">tool:{audit.toolResponseId}</code>}

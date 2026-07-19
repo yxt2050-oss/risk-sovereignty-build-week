@@ -23,22 +23,23 @@ and five lifelines in real time.
 00:01:05,000 --> 00:01:30,000
 Risk Sovereignty avoids the false choice
 between doing nothing and shutting down.
-It removes exposure in stages while keeping each move
-as reversible as possible.
+It verifies that the exit is real, removes exposure in stages,
+and preserves resources to participate again.
 
 5
 00:01:30,000 --> 00:02:15,000
 GPT-5.6 is not allowed to invent financial truth.
 The server forces a strict function call to the stress-test engine.
 The submitted case is calculated locally and returned to the model.
-A second pass produces a strict structured report.
+A second pass completes the sovereignty gate before staged actions.
 
 6
 00:02:15,000 --> 00:02:38,000
 Every action cites calculation or assumption evidence.
+A local method audit rejects imaginary evidence or broken phase order.
 The interface separates user facts, editable assumptions,
 deterministic calculations, and AI judgment.
-The audit strip exposes both OpenAI response IDs as proof of a live run.
+The audit strip proves a live run.
 
 7
 00:02:38,000 --> 00:02:50,000

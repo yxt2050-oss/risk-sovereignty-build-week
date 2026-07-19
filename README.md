@@ -10,7 +10,7 @@ Built for the **OpenAI Build Week 2026 — Work & Productivity** track.
 
 **Live demo:** <https://risk-sovereignty.dewy-spool-9953.chatgpt.site>
 
-Judges: start with the [90-second Judge Guide](docs/JUDGE_GUIDE.md). The repository also includes the [under-three-minute demo script](docs/DEMO_SCRIPT.md).
+Judges: start with the [90-second Judge Guide](docs/JUDGE_GUIDE.md). The repository also includes the [under-three-minute demo script](docs/DEMO_SCRIPT.md) and the founder-developed [Risk Sovereignty Method](docs/METHODOLOGY.md).
 
 ## Why this is not an AI wrapper
 
@@ -29,10 +29,11 @@ flowchart LR
 - **Inputs are facts:** GPT-5.6 cannot silently rewrite them.
 - **Assumptions are visible:** revenue, margin, payment, customer, debt, and inventory shocks remain editable.
 - **Calculations are deterministic:** the local engine owns stressed cash flow, one-time shock, runway, stage, and the first failing lifeline.
-- **AI owns judgment:** it challenges assumptions, explains the causal chain, and proposes a staged response.
+- **AI owns bounded judgment:** it challenges assumptions, tests whether the exit is real, separates decision quality from outcome, and proposes a staged response.
 - **Evidence remains inspectable:** every action must cite a calculation-trace or assumption ID.
+- **Method compliance is checked:** a post-generation audit rejects invented evidence, missing sovereignty fields, or reordered action phases.
 
-The product principle is **survival before maximization**: remove risk in pieces, avoid irreversible panic, and preserve exit rights for the next decision.
+The product principle is **survival before maximization, participation after protection**: remove risk in pieces, verify that exits really exist, preserve re-entry resources, and keep a bounded path to the upside. It is not a philosophy of hiding from risk; it is a structure for entering meaningful opportunities without allowing one loss to erase the next move.
 
 ## GPT-5.6 workflow
 
@@ -41,7 +42,8 @@ The server route uses the OpenAI Responses API in two passes:
 1. Force GPT-5.6 to call `calculate_stress_test` using a strict function schema.
 2. Normalize the arguments and run the calculation locally.
 3. Return the tool output to the same reasoning chain.
-4. Require a strict JSON Schema report with a causal chain, exactly three phases, critical assumptions, and an owner question.
+4. Require a strict JSON Schema report with a causal chain, a sovereignty gate, exactly three phases, critical assumptions, and an owner question.
+5. Run a deterministic semantic audit over phase order and evidence references before returning the report.
 
 The API key is read only on the server from `OPENAI_API_KEY`. It is never bundled into the client.
 Successful reports expose the model name, workflow stages, and both OpenAI response IDs in the on-screen audit strip so judges can distinguish a real GPT-5.6 run from the deterministic fallback. The public demo route also applies request-size checks, a per-client demo rate limit, a 75-second upstream timeout, and no-store response headers.
@@ -55,6 +57,7 @@ Successful reports expose the model name, workflow stages, and both OpenAI respo
 - 6-month hard test and first-failure diagnosis
 - Four survival stages: signal, trend, contagion, emergency
 - GPT-5.6 AI red-team report with deterministic local fallback
+- Sovereignty gate: exit reality, maximum tolerable loss, re-entry condition, preserved upside, and decision quality
 - Explicit input / assumption / calculation / AI audit boundary
 - Responsive deep-space neon interface derived from the original C visual prototype
 
@@ -87,7 +90,10 @@ Tests cover deterministic monotonicity and input normalization as well as produc
 - `app/RiskSovereigntyApp.tsx` — interactive bilingual product
 - `app/api/diagnose/route.ts` — server-only GPT-5.6 Responses API orchestration
 - `lib/engine.ts` — deterministic financial stress engine and tool schema
+- `lib/methodology.ts` — versioned method prompt and post-generation semantic audit
+- `docs/METHODOLOGY.md` — public operational specification of the founder-developed method
 - `tests/engine.test.mjs` — engine invariants and hostile-input checks
+- `tests/methodology.test.mjs` — method invariants, phase order, and evidence-integrity checks
 - `tests/rendered-html.test.mjs` — production-render smoke tests
 
 ## Build Week provenance
