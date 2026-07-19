@@ -11,9 +11,9 @@ Current handoff state:
 
 - Production site version 3 is public and QA-verified.
 - The complete Git history is published to the public GitHub repository, and local `main` matches `origin/main`.
-- Devpost Project Overview and Project Story are saved.
-- Devpost Additional Info is filled in the browser but cannot be saved until the required `/feedback` Session ID is supplied.
-- The project thumbnail is ready locally but still needs upload.
+- Devpost Project Overview is saved and the 3:2 project thumbnail is uploaded.
+- Devpost Project Details has the final project story and public demo URL filled in the browser, but cannot be saved until the required video URL is supplied.
+- Devpost Additional Info is filled in the browser with the public GitHub repository and judge path, but cannot be saved until the required `/feedback` Session ID is supplied.
 - Timed English captions, a shot list, and a 2:49.9 draft English narration are ready.
 
 ## Devpost positioning
@@ -37,6 +37,7 @@ Current handoff state:
 - [x] English demo script, captions, shot list, and draft narration
 - [x] Production version 3 deployed and desktop/mobile QA completed
 - [x] Source pushed to public GitHub repository
+- [x] Devpost project thumbnail uploaded
 - [ ] Production `OPENAI_API_KEY` configured as a secret
 - [ ] Real GPT-5.6 production call verified
 - [ ] Under-three-minute video uploaded
