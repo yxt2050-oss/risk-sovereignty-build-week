@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/risk-sovereignty-social.png",
+        url: "/risk-sovereignty-social-us.png",
         width: 1536,
         height: 1024,
         alt: "Risk Sovereignty AI stress-test control room with five financial lifelines",
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Risk Sovereignty",
     description: "AI stress testing for the choices you still want to have tomorrow.",
-    images: ["/risk-sovereignty-social.png"],
+    images: ["/risk-sovereignty-social-us.png"],
   },
 };
 

@@ -2,7 +2,7 @@
 
 **An AI red team for U.S. businesses, independent workers, and households that simulates a bad future, finds the first structural failure point, and preserves the right to exit in stages.**
 
-![Risk Sovereignty social card](public/risk-sovereignty-social.png)
+![Risk Sovereignty social card](public/risk-sovereignty-social-us.png)
 
 Most financial software optimizes a forecast. Risk Sovereignty starts with a different question: _if the world stops cooperating, what breaks first?_ It does not claim to predict the future. It lets a user construct an explicit bad future, reveals the first point at which the structure loses optionality, then asks GPT-5.6 to challenge the scenario and design three reversible interventions.
 

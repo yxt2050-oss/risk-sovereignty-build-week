@@ -4,24 +4,24 @@
 
 - Demo: <https://risk-sovereignty.dewy-spool-9953.chatgpt.site>
 - Repository: <https://github.com/yxt2050-oss/risk-sovereignty-build-week>
-- Video: pending
+- Video file: `H:\Sync\cowork\risk-sovereignty-demo-video\risk-sovereignty-us-multi-subject-demo.mp4` (39.9 seconds, 1920×1080, silent English captions)
 - `/feedback` session ID: `019f73fe-ce1a-71e0-8d61-664856e1aac6`
 
 Current handoff state:
 
-- Production site version 3 is public and QA-verified.
+- Production site version 6 is public with the U.S. multi-subject engine.
 - The complete Git history is published to the public GitHub repository, and local `main` matches `origin/main`.
 - Devpost Project Overview is saved and the 3:2 project thumbnail is uploaded.
-- Devpost Project Details has the final project story and public demo URL filled in the browser, but cannot be saved until the required video URL is supplied.
-- Devpost Additional Info is saved with the public GitHub repository, judge path, and `/feedback` Session ID. The submission is now at 3/5 steps.
+- Devpost Project Details still contains the earlier small-business story and cannot complete until the required video URL is supplied. The replacement text is in `docs/DEVPOST_STORY.md`.
+- Devpost Additional Info contains the public GitHub repository, judge path, and `/feedback` Session ID. The visible progress currently reads 2/5 because Project Details still lacks the video URL.
 - Timed English captions, a shot list, and a 2:49.9 draft English narration are ready.
 
 ## Devpost positioning
 
 - Track: Work & Productivity
 - Team: Individual
-- Project name: Risk Sovereignty: AI Stress Test for Small Businesses
-- Elevator pitch: An AI red team for small businesses that stress-tests cash flow, finds the first failure point, and builds staged survival plans that preserve the owner's next move.
+- Proposed project name: Risk Sovereignty: AI Stress Test for Real-World Survival
+- Proposed elevator pitch: A GPT-5.6 red team that simulates a bad future, finds what breaks first in a business, independent livelihood, or household, and preserves the right to exit in stages.
 
 ## Required final checks
 
@@ -35,12 +35,13 @@ Current handoff state:
 - [x] English README and Judge Guide
 - [x] 3:2 project thumbnail under 5 MB
 - [x] English demo script, captions, shot list, and draft narration
-- [x] Production version 3 deployed and desktop/mobile QA completed
+- [x] Production version 6 deployed with U.S. business, nonemployer, and household modes
 - [x] Source pushed to public GitHub repository
 - [x] Devpost project thumbnail uploaded
-- [ ] Production `OPENAI_API_KEY` configured as a secret
+- [x] Production `OPENAI_API_KEY` configured as a secret
 - [ ] Real GPT-5.6 production call verified
-- [ ] Under-three-minute video uploaded
+- [x] Under-three-minute video generated
+- [ ] Video uploaded as Unlisted and URL added to Devpost
 - [x] `/feedback` shared-session ID added
 - [ ] Devpost preview reviewed
 - [ ] Final submission explicitly approved by owner
