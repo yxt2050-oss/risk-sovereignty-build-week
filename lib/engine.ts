@@ -48,6 +48,17 @@ export type Locale = "zh" | "en";
 export const REGIONS = ["Northeast", "Midwest", "South", "West", "Multi-region / National"] as const;
 export type Region = (typeof REGIONS)[number];
 
+export const ASSET_PROFILES = [
+  "None / cash only",
+  "Rental real estate",
+  "Public stocks / ETFs",
+  "REITs",
+  "Private business interest",
+  "Bonds / CDs / Treasuries",
+  "Mixed income portfolio",
+] as const;
+export type AssetProfile = (typeof ASSET_PROFILES)[number];
+
 export const SIZE_BANDS = [
   "Nonemployer / owner-only",
   "Micro employer (1–9)",
@@ -70,6 +81,7 @@ export interface SubjectInputs {
   profile: Profile;
   sizeBand: SizeBand;
   region: Region;
+  assetProfile: AssetProfile;
   monthlyRevenue: number;
   grossMargin: number;
   fixedCosts: number;
@@ -84,6 +96,9 @@ export interface SubjectInputs {
   creditCardDebt: number;
   otherConsumerDebt: number;
   liquidInvestments: number;
+  incomeAssetValue: number;
+  monthlyAssetIncome: number;
+  assetCarryingCosts: number;
 }
 
 // Retained as an exported alias so earlier integrations remain source-compatible.
@@ -101,6 +116,9 @@ export interface StressInputs {
   emergencyExpense: number;
   debtPaymentIncrease: number;
   liquidAssetHaircut: number;
+  assetIncomeDrop: number;
+  assetIncomeInterruption: number;
+  assetValueDrop: number;
 }
 
 export interface RiskCase {
@@ -110,7 +128,7 @@ export interface RiskCase {
   context?: string;
 }
 
-export type LifelineKey = "cash" | "margin" | "collection" | "leverage" | "concentration";
+export type LifelineKey = "cash" | "margin" | "collection" | "leverage" | "concentration" | "asset";
 
 export interface Lifeline {
   key: LifelineKey;
@@ -129,6 +147,9 @@ export interface EngineResult {
   collectionFreeze: number;
   debtCallShock: number;
   inventoryLoss: number;
+  assetIncome: number;
+  stressedAssetIncome: number;
+  assetValueLoss: number;
   liquidityShock: number;
   oneTimeShock: number;
   availableBuffer: number;
@@ -151,6 +172,7 @@ const business = (
   profile,
   sizeBand: "Small employer (10–99)",
   region: "South",
+  assetProfile: "None / cash only",
   monthlyRevenue: 0,
   grossMargin: 0,
   fixedCosts: 0,
@@ -165,6 +187,9 @@ const business = (
   creditCardDebt: 0,
   otherConsumerDebt: 0,
   liquidInvestments: 0,
+  incomeAssetValue: 0,
+  monthlyAssetIncome: 0,
+  assetCarryingCosts: 0,
   ...values,
 });
 
@@ -212,13 +237,13 @@ export const PROFILE_PRESETS: Record<Profile, SubjectInputs> = {
   "Arts / Media": selfEmployed("Arts / Media", { monthlyRevenue: 8, grossMargin: 76, fixedCosts: 4.8, cash: 9, receivables: 9, receivableDays: 60, shortDebt: 5, concentration: 58 }),
   "Home Services": selfEmployed("Home Services", { monthlyRevenue: 11, grossMargin: 61, fixedCosts: 4.7, cash: 10, receivables: 4, receivableDays: 21, inventory: 2, shortDebt: 10, concentration: 18 }),
 
-  "Early-career Renter": household("Early-career Renter", { monthlyRevenue: 4.6, fixedCosts: 2.1, housingPayment: 1.55, monthlyDebtPayments: 0.42, cash: 5.5, creditCardDebt: 6.3, otherConsumerDebt: 24, liquidInvestments: 4, concentration: 100 }),
-  "Single-income Household": household("Single-income Household", { monthlyRevenue: 6.8, fixedCosts: 2.7, housingPayment: 2.05, monthlyDebtPayments: 0.75, cash: 13, creditCardDebt: 8.5, otherConsumerDebt: 31, liquidInvestments: 16, concentration: 100, sizeBand: "Family with dependents" }),
-  "Dual-income Family": household("Dual-income Family", { monthlyRevenue: 10.5, fixedCosts: 4.1, housingPayment: 2.65, monthlyDebtPayments: 1.05, cash: 28, creditCardDebt: 9, otherConsumerDebt: 52, liquidInvestments: 38, concentration: 58, sizeBand: "Family with dependents" }),
-  "Homeowner with Mortgage": household("Homeowner with Mortgage", { monthlyRevenue: 8.4, fixedCosts: 3.25, housingPayment: 2.8, monthlyDebtPayments: 0.85, cash: 20, creditCardDebt: 7.2, otherConsumerDebt: 265, liquidInvestments: 27, concentration: 72, sizeBand: "Two-adult household" }),
-  "Wage + Gig Household": household("Wage + Gig Household", { monthlyRevenue: 7.2, fixedCosts: 2.9, housingPayment: 2.15, monthlyDebtPayments: 0.7, cash: 14, creditCardDebt: 8, otherConsumerDebt: 38, liquidInvestments: 13, concentration: 78, sizeBand: "Two-adult household" }),
+  "Early-career Renter": household("Early-career Renter", { monthlyRevenue: 4.6, fixedCosts: 2.1, housingPayment: 1.55, monthlyDebtPayments: 0.42, cash: 5.5, creditCardDebt: 6.3, otherConsumerDebt: 24, liquidInvestments: 4, concentration: 100, assetProfile: "Public stocks / ETFs", incomeAssetValue: 12, monthlyAssetIncome: 0.03 }),
+  "Single-income Household": household("Single-income Household", { monthlyRevenue: 6.8, fixedCosts: 2.7, housingPayment: 2.05, monthlyDebtPayments: 0.75, cash: 13, creditCardDebt: 8.5, otherConsumerDebt: 31, liquidInvestments: 16, concentration: 100, sizeBand: "Family with dependents", assetProfile: "Mixed income portfolio", incomeAssetValue: 35, monthlyAssetIncome: 0.12, assetCarryingCosts: 0.02 }),
+  "Dual-income Family": household("Dual-income Family", { monthlyRevenue: 10.5, fixedCosts: 4.1, housingPayment: 2.65, monthlyDebtPayments: 1.05, cash: 28, creditCardDebt: 9, otherConsumerDebt: 52, liquidInvestments: 38, concentration: 58, sizeBand: "Family with dependents", assetProfile: "Rental real estate", incomeAssetValue: 95, monthlyAssetIncome: 1.9, assetCarryingCosts: 1.45 }),
+  "Homeowner with Mortgage": household("Homeowner with Mortgage", { monthlyRevenue: 8.4, fixedCosts: 3.25, housingPayment: 2.8, monthlyDebtPayments: 0.85, cash: 20, creditCardDebt: 7.2, otherConsumerDebt: 265, liquidInvestments: 27, concentration: 72, sizeBand: "Two-adult household", assetProfile: "Public stocks / ETFs", incomeAssetValue: 70, monthlyAssetIncome: 0.18, assetCarryingCosts: 0.02 }),
+  "Wage + Gig Household": household("Wage + Gig Household", { monthlyRevenue: 7.2, fixedCosts: 2.9, housingPayment: 2.15, monthlyDebtPayments: 0.7, cash: 14, creditCardDebt: 8, otherConsumerDebt: 38, liquidInvestments: 13, concentration: 78, sizeBand: "Two-adult household", assetProfile: "REITs", incomeAssetValue: 22, monthlyAssetIncome: 0.08, assetCarryingCosts: 0.01 }),
   "Student-loan Household": household("Student-loan Household", { monthlyRevenue: 5.9, fixedCosts: 2.4, housingPayment: 1.85, monthlyDebtPayments: 0.9, cash: 9, creditCardDebt: 7.3, otherConsumerDebt: 58, liquidInvestments: 8, concentration: 100 }),
-  "Near-retirement Household": household("Near-retirement Household", { monthlyRevenue: 8.2, fixedCosts: 3.2, housingPayment: 1.5, monthlyDebtPayments: 0.55, cash: 42, creditCardDebt: 4.5, otherConsumerDebt: 92, liquidInvestments: 210, concentration: 64, sizeBand: "Two-adult household" }),
+  "Near-retirement Household": household("Near-retirement Household", { monthlyRevenue: 8.2, fixedCosts: 3.2, housingPayment: 1.5, monthlyDebtPayments: 0.55, cash: 42, creditCardDebt: 4.5, otherConsumerDebt: 92, liquidInvestments: 65, concentration: 64, sizeBand: "Two-adult household", assetProfile: "Mixed income portfolio", incomeAssetValue: 320, monthlyAssetIncome: 1.4, assetCarryingCosts: 0.15 }),
 };
 
 // Business-only compatibility export used by older tests and links.
@@ -252,6 +277,9 @@ export const DEFAULT_STRESS: StressInputs = {
   emergencyExpense: 4,
   debtPaymentIncrease: 15,
   liquidAssetHaircut: 12,
+  assetIncomeDrop: 30,
+  assetIncomeInterruption: 3,
+  assetValueDrop: 20,
 };
 
 const round = (value: number, digits = 1) => {
@@ -279,6 +307,7 @@ export function normalizeRiskCase(input: RiskCase): RiskCase {
       profile,
       sizeBand: allowedSizes.includes(raw.sizeBand) ? raw.sizeBand : preset.sizeBand,
       region: REGIONS.includes(raw.region) ? raw.region : preset.region,
+      assetProfile: ASSET_PROFILES.includes(raw.assetProfile) ? raw.assetProfile : preset.assetProfile,
       monthlyRevenue: clamp(raw.monthlyRevenue, 0, 100000),
       grossMargin: subjectType === "household" ? 100 : clamp(raw.grossMargin, 0, 100),
       fixedCosts: clamp(raw.fixedCosts, 0, 100000),
@@ -293,6 +322,9 @@ export function normalizeRiskCase(input: RiskCase): RiskCase {
       creditCardDebt: clamp(raw.creditCardDebt, 0, 1000000),
       otherConsumerDebt: clamp(raw.otherConsumerDebt, 0, 1000000),
       liquidInvestments: clamp(raw.liquidInvestments, 0, 1000000),
+      incomeAssetValue: clamp(raw.incomeAssetValue, 0, 1000000),
+      monthlyAssetIncome: clamp(raw.monthlyAssetIncome, 0, 100000),
+      assetCarryingCosts: clamp(raw.assetCarryingCosts, 0, 100000),
     },
     stress: {
       revenueDrop: clamp(stress.revenueDrop, 0, 100),
@@ -306,6 +338,9 @@ export function normalizeRiskCase(input: RiskCase): RiskCase {
       emergencyExpense: clamp(stress.emergencyExpense, 0, 100000),
       debtPaymentIncrease: clamp(stress.debtPaymentIncrease, 0, 200),
       liquidAssetHaircut: clamp(stress.liquidAssetHaircut, 0, 100),
+      assetIncomeDrop: clamp(stress.assetIncomeDrop, 0, 100),
+      assetIncomeInterruption: clamp(stress.assetIncomeInterruption, 0, 24),
+      assetValueDrop: clamp(stress.assetValueDrop, 0, 100),
     },
   };
 }
@@ -354,7 +389,7 @@ function calculateOperatingCase(b: SubjectInputs, s: StressInputs): EngineResult
   }));
 
   return finishResult(b.subjectType, {
-    baseNetCashFlow: round(baseNetCashFlow), stressedRevenue: round(stressedRevenue), stressedGrossMargin: round(stressedGrossMargin), stressedNetCashFlow: round(stressedNetCashFlow), monthlyBurn: round(monthlyBurn), collectionFreeze: round(collectionFreeze), debtCallShock: round(debtCallShock), inventoryLoss: round(inventoryLoss), liquidityShock: round(liquidityShock), oneTimeShock: round(oneTimeShock), availableBuffer: round(availableBuffer), runwayMonths: round(runwayMonths), runwayCapped, sixMonthNeed: round(sixMonthNeed), sixMonthPass, lifelines,
+    baseNetCashFlow: round(baseNetCashFlow), stressedRevenue: round(stressedRevenue), stressedGrossMargin: round(stressedGrossMargin), stressedNetCashFlow: round(stressedNetCashFlow), monthlyBurn: round(monthlyBurn), collectionFreeze: round(collectionFreeze), debtCallShock: round(debtCallShock), inventoryLoss: round(inventoryLoss), assetIncome: 0, stressedAssetIncome: 0, assetValueLoss: 0, liquidityShock: round(liquidityShock), oneTimeShock: round(oneTimeShock), availableBuffer: round(availableBuffer), runwayMonths: round(runwayMonths), runwayCapped, sixMonthNeed: round(sixMonthNeed), sixMonthPass, lifelines,
     calculationTrace: [
       { id: "stressed_revenue", formula: "revenue × (1 − market drop) × (1 − customer loss)", value: round(stressedRevenue) },
       { id: "monthly_cash_flow", formula: "stressed revenue × stressed margin − fixed cash commitments", value: round(stressedNetCashFlow) },
@@ -374,18 +409,23 @@ function calculateOperatingCase(b: SubjectInputs, s: StressInputs): EngineResult
 }
 
 function calculateHouseholdCase(b: SubjectInputs, s: StressInputs): EngineResult {
-  const baseNetCashFlow = b.monthlyRevenue - b.fixedCosts - b.housingPayment - b.monthlyDebtPayments;
-  const stressedRevenue = b.monthlyRevenue * (1 - s.revenueDrop / 100);
+  const assetIncome = b.monthlyAssetIncome;
+  const baseNetCashFlow = b.monthlyRevenue + assetIncome - b.fixedCosts - b.housingPayment - b.monthlyDebtPayments - b.assetCarryingCosts;
+  const stressedLaborIncome = b.monthlyRevenue * (1 - s.revenueDrop / 100);
+  const stressedAssetIncome = assetIncome * (1 - s.assetIncomeDrop / 100);
+  const stressedRevenue = stressedLaborIncome + stressedAssetIncome;
   const stressedEssentialCosts = b.fixedCosts * (1 + s.expenseIncrease / 100);
   const stressedDebtPayments = b.monthlyDebtPayments * (1 + s.debtPaymentIncrease / 100);
-  const stressedNetCashFlow = stressedRevenue - stressedEssentialCosts - b.housingPayment - stressedDebtPayments;
+  const stressedNetCashFlow = stressedRevenue - stressedEssentialCosts - b.housingPayment - stressedDebtPayments - b.assetCarryingCosts;
   const monthlyBurn = Math.max(0, -stressedNetCashFlow);
   const interruptionShock = b.monthlyRevenue * s.incomeInterruption;
+  const assetIncomeInterruptionShock = assetIncome * s.assetIncomeInterruption;
   const debtShock = (b.creditCardDebt + b.otherConsumerDebt) * (s.debtCall / 100);
-  const liquidityShock = interruptionShock + s.emergencyExpense + debtShock;
+  const liquidityShock = interruptionShock + assetIncomeInterruptionShock + s.emergencyExpense + debtShock;
   const investmentLoss = b.liquidInvestments * (s.liquidAssetHaircut / 100);
+  const assetValueLoss = b.incomeAssetValue * (s.assetValueDrop / 100);
   const usableInvestments = b.liquidInvestments - investmentLoss;
-  const oneTimeShock = liquidityShock + investmentLoss;
+  const oneTimeShock = liquidityShock + investmentLoss + assetValueLoss;
   const availableBuffer = b.cash + usableInvestments - liquidityShock;
   const runwayCapped = monthlyBurn < 0.01;
   const runwayMonths = runwayCapped ? 36 : clamp(Math.max(0, availableBuffer) / monthlyBurn, 0, 36);
@@ -394,12 +434,24 @@ function calculateHouseholdCase(b: SubjectInputs, s: StressInputs): EngineResult
   const stressedDebtService = b.housingPayment + stressedDebtPayments;
   const debtServiceRatio = stressedRevenue > 0 ? (stressedDebtService / stressedRevenue) * 100 : 100;
   const housingRatio = stressedRevenue > 0 ? (b.housingPayment / stressedRevenue) * 100 : 100;
+  const baseNetAssetContribution = Math.max(0.01, assetIncome - b.assetCarryingCosts);
+  const stressedNetAssetContribution = stressedAssetIncome - b.assetCarryingCosts;
+  const assetScore = clamp(
+    (Math.max(0, stressedNetAssetContribution) / baseNetAssetContribution) * 100
+      - s.assetIncomeInterruption * 6
+      - s.assetValueDrop * 0.25,
+    0,
+    100,
+  );
   const lifelines: Lifeline[] = [
     { key: "cash", score: sixMonthNeed < 0.01 ? (availableBuffer >= 0 ? 100 : 0) : clamp((Math.max(0, availableBuffer) / sixMonthNeed) * 100, 0, 100), metric: runwayMonths, unit: "months" },
-    { key: "margin", score: clamp((stressedRevenue / Math.max(0.01, b.monthlyRevenue)) * 100 - s.incomeInterruption * 8, 0, 100), metric: 100 - s.revenueDrop, unit: "%" },
+    { key: "margin", score: clamp((stressedLaborIncome / Math.max(0.01, b.monthlyRevenue)) * 100 - s.incomeInterruption * 8, 0, 100), metric: 100 - s.revenueDrop, unit: "%" },
     { key: "collection", score: clamp(100 - Math.max(0, housingRatio - 25) * 2.5, 0, 100), metric: housingRatio, unit: "%" },
     { key: "leverage", score: clamp(100 - Math.max(0, debtServiceRatio - 20) * 2 - s.debtPaymentIncrease * 0.3, 0, 100), metric: debtServiceRatio, unit: "%" },
     { key: "concentration", score: clamp(100 - b.concentration, 0, 100), metric: b.concentration, unit: "%" },
+    ...(b.assetProfile !== "None / cash only" || b.incomeAssetValue > 0 || assetIncome > 0 || b.assetCarryingCosts > 0
+      ? [{ key: "asset", score: assetScore, metric: Math.max(s.assetIncomeDrop, s.assetValueDrop), unit: "%" }]
+      : []),
   ].map((item): Lifeline => ({
     ...item,
     key: item.key as LifelineKey,
@@ -409,18 +461,24 @@ function calculateHouseholdCase(b: SubjectInputs, s: StressInputs): EngineResult
   }));
 
   return finishResult("household", {
-    baseNetCashFlow: round(baseNetCashFlow), stressedRevenue: round(stressedRevenue), stressedGrossMargin: 100, stressedNetCashFlow: round(stressedNetCashFlow), monthlyBurn: round(monthlyBurn), collectionFreeze: round(interruptionShock), debtCallShock: round(debtShock), inventoryLoss: round(investmentLoss), liquidityShock: round(liquidityShock), oneTimeShock: round(oneTimeShock), availableBuffer: round(availableBuffer), runwayMonths: round(runwayMonths), runwayCapped, sixMonthNeed: round(sixMonthNeed), sixMonthPass, lifelines,
+    baseNetCashFlow: round(baseNetCashFlow), stressedRevenue: round(stressedRevenue), stressedGrossMargin: 100, stressedNetCashFlow: round(stressedNetCashFlow), monthlyBurn: round(monthlyBurn), collectionFreeze: round(interruptionShock + assetIncomeInterruptionShock), debtCallShock: round(debtShock), inventoryLoss: round(investmentLoss), assetIncome: round(assetIncome), stressedAssetIncome: round(stressedAssetIncome), assetValueLoss: round(assetValueLoss), liquidityShock: round(liquidityShock), oneTimeShock: round(oneTimeShock), availableBuffer: round(availableBuffer), runwayMonths: round(runwayMonths), runwayCapped, sixMonthNeed: round(sixMonthNeed), sixMonthPass, lifelines,
     calculationTrace: [
-      { id: "stressed_income", formula: "take-home income × (1 − income reduction)", value: round(stressedRevenue) },
-      { id: "monthly_cash_flow", formula: "stressed income − inflated essentials − housing − stressed debt payments", value: round(stressedNetCashFlow) },
-      { id: "liquidity_shock", formula: "income interruption + emergency expense + accelerated debt", value: round(liquidityShock) },
-      { id: "asset_haircut", formula: "liquid investments × market/liquidity haircut", value: round(investmentLoss) },
+      { id: "stressed_labor_income", formula: "take-home labor income × (1 − income reduction)", value: round(stressedLaborIncome) },
+      { id: "stressed_asset_income", formula: "monthly asset income × (1 − asset-income drop)", value: round(stressedAssetIncome) },
+      { id: "monthly_cash_flow", formula: "stressed labor + asset income − essentials − housing − debt − asset carrying costs", value: round(stressedNetCashFlow) },
+      { id: "liquidity_shock", formula: "labor interruption + asset-income interruption + emergency expense + accelerated debt", value: round(liquidityShock) },
+      { id: "liquid_reserve_haircut", formula: "accessible reserves × market/liquidity haircut", value: round(investmentLoss) },
+      { id: "income_asset_value_loss", formula: "income-producing asset equity/value × asset-value drop (economic, not cash)", value: round(assetValueLoss) },
       { id: "survival_runway", formula: "max(0, cash + usable liquid investments − immediate shocks) ÷ monthly burn", value: round(runwayMonths) },
     ],
     assumptions: [
       { id: "usd_thousands", value: "All money inputs use USD thousands; income and payments are monthly unless labeled otherwise.", editable: false },
       { id: "take_home_income", value: "Income means spendable take-home household income after payroll withholding.", editable: true },
-      { id: "liquid_investments", value: "Only assets the household could realistically access are entered as liquid investments; retirement penalties and taxes are not modeled.", editable: true },
+      { id: "liquid_investments", value: "Accessible reserves exclude the income-producing assets entered separately; retirement penalties and taxes are not modeled.", editable: true },
+      { id: "gross_asset_income", value: "Monthly asset income is entered before recurring asset debt service, taxes, insurance, HOA, management, maintenance reserves, and other carrying costs.", editable: true },
+      { id: "asset_income_can_stop", value: "Rent, dividends, distributions, or private-business payouts may fall or stop while carrying costs continue.", editable: true },
+      { id: "asset_value_non_cash", value: "An asset-value decline reduces economic equity but is not treated as an immediate cash withdrawal unless the asset must be sold.", editable: false },
+      { id: "treasury_boundary", value: "Treasury instruments are not treated as universally risk-free: holding to maturity differs from selling early, and market-price, inflation, and reinvestment risks can remain.", editable: true },
       { id: "debt_acceleration", value: "Accelerated debt is a scenario, not a prediction; use zero unless a contractual or delinquency trigger is plausible.", editable: true },
       { id: "household_scope", value: "This is a household cash-flow screen, not individualized financial, tax, bankruptcy, benefits, or credit advice.", editable: false },
       { id: "runway_cap", value: "Positive stressed cash flow is displayed as 36+ months, not infinity.", editable: false },
@@ -438,10 +496,11 @@ const subjectProperties = {
   profile: { type: "string", enum: [...PROFILES] },
   sizeBand: { type: "string", enum: [...SIZE_BANDS] },
   region: { type: "string", enum: [...REGIONS] },
-  monthlyRevenue: { type: "number" }, grossMargin: { type: "number" }, fixedCosts: { type: "number" }, cash: { type: "number" }, receivables: { type: "number" }, receivableDays: { type: "number" }, inventory: { type: "number" }, shortDebt: { type: "number" }, concentration: { type: "number" }, housingPayment: { type: "number" }, monthlyDebtPayments: { type: "number" }, creditCardDebt: { type: "number" }, otherConsumerDebt: { type: "number" }, liquidInvestments: { type: "number" },
+  assetProfile: { type: "string", enum: [...ASSET_PROFILES] },
+  monthlyRevenue: { type: "number" }, grossMargin: { type: "number" }, fixedCosts: { type: "number" }, cash: { type: "number" }, receivables: { type: "number" }, receivableDays: { type: "number" }, inventory: { type: "number" }, shortDebt: { type: "number" }, concentration: { type: "number" }, housingPayment: { type: "number" }, monthlyDebtPayments: { type: "number" }, creditCardDebt: { type: "number" }, otherConsumerDebt: { type: "number" }, liquidInvestments: { type: "number" }, incomeAssetValue: { type: "number" }, monthlyAssetIncome: { type: "number" }, assetCarryingCosts: { type: "number" },
 } as const;
 const stressProperties = {
-  revenueDrop: { type: "number" }, marginDrop: { type: "number" }, paymentDelay: { type: "number" }, customerLoss: { type: "number" }, debtCall: { type: "number" }, inventoryImpairment: { type: "number" }, expenseIncrease: { type: "number" }, incomeInterruption: { type: "number" }, emergencyExpense: { type: "number" }, debtPaymentIncrease: { type: "number" }, liquidAssetHaircut: { type: "number" },
+  revenueDrop: { type: "number" }, marginDrop: { type: "number" }, paymentDelay: { type: "number" }, customerLoss: { type: "number" }, debtCall: { type: "number" }, inventoryImpairment: { type: "number" }, expenseIncrease: { type: "number" }, incomeInterruption: { type: "number" }, emergencyExpense: { type: "number" }, debtPaymentIncrease: { type: "number" }, liquidAssetHaircut: { type: "number" }, assetIncomeDrop: { type: "number" }, assetIncomeInterruption: { type: "number" }, assetValueDrop: { type: "number" },
 } as const;
 
 export const RISK_CASE_JSON_SCHEMA = {

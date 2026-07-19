@@ -10,7 +10,7 @@ The same founder-developed method now works across three distinct U.S. structure
 
 - **Employer businesses:** sector, size context, sales, gross margin after COGS, fixed cash commitments, receivables, inventory, near-term debt, and customer concentration.
 - **Nonemployers / sole proprietors:** owner-only operating economics with client, platform, working-capital, and debt concentration.
-- **Individuals / households:** take-home income, essential spending, rent or mortgage, recurring debt payments, credit cards, other consumer debt, cash, accessible investments, and primary-income concentration.
+- **Individuals / households:** take-home labor income, essential spending, rent or mortgage, recurring debt payments, credit cards, other consumer debt, cash, accessible reserves, income-producing assets, their carrying costs, and primary-income concentration.
 
 Built for the **OpenAI Build Week 2026 — Work & Productivity** track.
 
@@ -33,7 +33,7 @@ flowchart LR
 ```
 
 - **Inputs are facts:** GPT-5.6 cannot silently rewrite them.
-- **Assumptions are visible:** revenue, margin, payment, customer, debt, and inventory shocks remain editable.
+- **Assumptions are visible:** revenue, margin, payment, customer, debt, inventory, labor-income, asset-income, and asset-value shocks remain editable.
 - **Calculations are deterministic:** the local engine owns stressed cash flow, immediate liquidity shock, economic impairment, runway, stage, and the first failing lifeline.
 - **AI owns bounded judgment:** it challenges assumptions, tests whether the exit is real, separates decision quality from outcome, and proposes a staged response.
 - **Evidence remains inspectable:** every action must cite a calculation-trace or assumption ID.
@@ -56,7 +56,9 @@ Successful reports expose the model name, workflow stages, and both OpenAI respo
 
 ## U.S. market calibration
 
-The interface uses USD thousands, U.S. Census regions, and common U.S. structures. Employer-sector choices are drawn from the most numerous Census County Business Patterns sectors; employee bands are context only and are not presented as legal SBA size determinations. The nonemployer mode reflects the Census definition of businesses with no paid employees, most of which are self-employed sole proprietors. Household scenarios are grounded in the Federal Reserve's recurring categories of income volatility, job interruption, housing costs, credit-card and consumer debt, and major medical/vehicle/home expenses.
+The interface uses USD thousands, U.S. Census regions, and common U.S. structures. Employer-sector choices are drawn from the most numerous Census County Business Patterns sectors; employee bands are context only and are not presented as legal SBA size determinations. The nonemployer mode reflects the Census definition of businesses with no paid employees, most of which are self-employed sole proprietors. Household scenarios are grounded in the Federal Reserve's recurring categories of income volatility, job interruption, housing costs, credit-card and consumer debt, major expenses, and commonly held financial or income-producing assets.
+
+Household asset returns are modeled as a second cash-flow channel rather than merged into wages. Users enter gross monthly rent, dividends, distributions, or other payouts separately from recurring mortgage, tax, insurance, management, maintenance, and similar carrying costs. A scenario can interrupt the income while costs continue. It can also reduce asset equity or market value without pretending that a paper loss instantly left the bank account. Asset presets are editable examples—not performance forecasts, allocation advice, or hidden benchmarks.
 
 No hidden industry, size, or regional multiplier changes a user's numbers. Public data selects understandable fields and presets; submitted facts remain authoritative.
 
@@ -65,8 +67,11 @@ Primary references:
 - [U.S. Census Bureau — County Business Patterns API](https://www.census.gov/data/developers/data-sets/cbp-zbp/cbp-api.html)
 - [U.S. Census Bureau — 2023 Nonemployer Statistics](https://www.census.gov/newsroom/press-releases/2025/2023-nonemployer-statistics.html)
 - [Federal Reserve — Economic Well-Being of U.S. Households in 2025](https://www.federalreserve.gov/publications/2026-economic-well-being-of-us-households-in-2025-executive-summary.htm)
+- [Federal Reserve — 2025 SHED Appendix B: Assets](https://www.federalreserve.gov/publications/2026-supplemental-appendixes-report-economic-well-being-us-households-2025-appendix-b.htm)
 - [Federal Reserve Bank of New York — Household Debt and Credit](https://www.newyorkfed.org/householdcredit/hhdc-iframe)
 - [Federal Reserve Small Business Credit Survey — 2025 Employer Firms](https://www.fedsmallbusiness.org/reports/survey/2025/2025-report-on-employer-firms)
+- [IRS Publication 527 — Residential Rental Property](https://www.irs.gov/publications/p527)
+- [Investor.gov — Mutual Funds and ETFs](https://www.investor.gov/introduction-investing/investing-basics/investment-products/mutual-funds-and-exchange-traded-funds-etfs/mutual-funds)
 
 ## Product experience
 
@@ -74,7 +79,7 @@ Primary references:
 - Three subject modes with 23 editable U.S. profile presets
 - Census-region and employee/household-structure context
 - Live “bad weather” sliders
-- Subject-aware lifelines: operating cash/margin/collection/leverage/concentration or household liquidity/income/housing/debt-service/income concentration
+- Subject-aware lifelines: operating cash/margin/collection/leverage/concentration or household liquidity/labor income/housing/debt service/income concentration/asset return
 - 6-month hard test and first-failure diagnosis
 - Four survival stages: signal, trend, contagion, emergency
 - GPT-5.6 AI red-team report with deterministic local fallback

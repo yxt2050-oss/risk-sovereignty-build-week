@@ -78,6 +78,17 @@ The method never labels all debt or leverage as bad. It tests four dimensions:
 
 Leverage can be appropriate when loss remains affordable and staged. It becomes dangerous when its safety depends on uninterrupted favorable assumptions.
 
+## Asset return is a separate household lifeline
+
+Wages and asset returns can fail for different reasons, so the household engine does not merge them. Rent, dividends, distributions, REIT income, private-business payouts, and bond interest are entered as a separate gross monthly channel. Mortgage debt service, property tax, insurance, HOA or management fees, maintenance reserves, and other recurring asset costs remain visible even when that income falls or stops.
+
+The method also separates two kinds of damage:
+
+1. **Liquidity damage:** missed rent or distributions remove spendable cash while carrying costs continue.
+2. **Economic value damage:** property equity, shares, funds, REITs, or a private-business interest may lose value without money immediately leaving the bank account.
+
+This distinction prevents both false reassurance and double counting. A value decline still weakens optionality and can become a cash problem if sale is forced, but the engine does not invent that forced sale. Asset categories are scenario vocabulary, not recommendations, return forecasts, or claims that any instrument is universally safe.
+
 ## Meta-risks that can defeat the method
 
 The original philosophy was itself subjected to adversarial pressure tests. The product therefore treats these as first-class failure modes:

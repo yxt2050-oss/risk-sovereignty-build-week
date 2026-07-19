@@ -16,9 +16,9 @@ Risk Sovereignty is an AI red team and deterministic financial stress test for t
 
 - **Employer businesses** — common U.S. sectors, employee-size context, revenue, gross margin after COGS, fixed cash commitments, receivables, inventory, debt due within 12 months, and customer concentration.
 - **Nonemployers / sole proprietors** — owner-only operating economics with client, platform, working-capital, and debt concentration.
-- **Individuals / households** — take-home income, essential spending, rent or mortgage, recurring debt payments, credit cards, other consumer debt, cash, accessible investments, and primary-income concentration.
+- **Individuals / households** — take-home labor income, essential spending, rent or mortgage, recurring debt payments, credit cards, other consumer debt, cash, accessible reserves, income-producing assets, and primary-income concentration.
 
-Each mode has subject-specific “bad weather.” A business can test revenue loss, margin compression, delayed collections, customer non-payment, accelerated debt, and inventory impairment. A household can test reduced income, complete income interruption, higher essential costs, medical or repair emergencies, debt-payment increases, accelerated consumer debt, and a haircut to accessible investments.
+Each mode has subject-specific “bad weather.” A business can test revenue loss, margin compression, delayed collections, customer non-payment, accelerated debt, and inventory impairment. A household can test reduced labor income, job interruption, higher essential costs, emergencies, debt-payment increases, accelerated consumer debt, and a haircut to accessible reserves. It can also model rental, dividend, REIT, private-business, bond, or mixed-portfolio income separately from recurring asset carrying costs, then test income decline, income interruption, and asset-value loss as distinct events.
 
 A deterministic engine calculates:
 
@@ -77,13 +77,13 @@ I rebuilt the presets and vocabulary so U.S. judges do not need to translate a C
 
 The interface now uses USD thousands, U.S. Census regions, Census-style nonemployer terminology, and common U.S. employer sectors. Employee bands are context only—not legal SBA classifications—and no hidden industry, size, or regional coefficient changes the user's numbers.
 
-Household scenarios reflect categories repeatedly measured by the Federal Reserve and New York Fed: job and income instability, housing costs, credit cards, mortgages, auto and student debt, and major medical, vehicle, or home-repair expenses. Public data selects understandable fields and starter scenarios; user-supplied facts remain authoritative.
+Household scenarios reflect categories repeatedly measured by the Federal Reserve and New York Fed: job and income instability, housing costs, credit cards, mortgages, auto and student debt, major expenses, and commonly held financial or income-producing assets. IRS rental-property guidance informed the visible separation between rental income and carrying expenses. Public data selects understandable fields and starter scenarios; user-supplied facts remain authoritative.
 
 ## Challenges
 
 The hardest challenge was preserving one philosophy without forcing three subjects into one false financial model. A household does not have gross margin or accounts receivable. A sole proprietor is not automatically an employer. An inventory write-down is economic damage but not necessarily an immediate cash withdrawal.
 
-The solution was a shared sovereignty method over two deterministic engines: an operating-liquidity engine for businesses and nonemployers, and a household cash-flow engine for individuals and families. Both produce the same high-level question—what fails first?—while keeping their accounting meanings separate.
+The solution was a shared sovereignty method over two deterministic engines: an operating-liquidity engine for businesses and nonemployers, and a household cash-flow engine for individuals and families. The household engine also separates labor income, asset income, carrying costs, liquid reserves, and noncash asset-value loss. Both engines produce the same high-level question—what fails first?—while keeping their accounting meanings separate.
 
 Another challenge was making AI structurally necessary but not numerically authoritative. GPT-5.6 is valuable for messy context, adversarial causal reasoning, exit-reality testing, and reversible action design. It is not allowed to invent the cash result.
 

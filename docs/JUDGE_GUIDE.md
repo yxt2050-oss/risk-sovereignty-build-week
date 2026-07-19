@@ -3,9 +3,9 @@
 ## The 90-second path
 
 1. Start at the runway diagnosis. The loaded manufacturing case fails immediately because simultaneous collection and debt shocks consume more cash than the company holds; inventory impairment remains visible as economic damage without being misreported as an instant cash withdrawal.
-2. Move any **Bad weather** slider. The runway, five lifelines, six-month test, and first failure point update locally and deterministically.
+2. Move any **Bad weather** slider. The runway, subject-specific lifelines, six-month test, and first failure point update locally and deterministically.
 3. Switch between **Employer business**, **Independent / sole proprietor**, and **Individual / household**. Presets are editable examples, never hidden benchmarks.
-4. In household mode, inspect income interruption, essential-cost inflation, rent or mortgage, debt service, medical or repair emergencies, and accessible savings. Notice that household lifelines and formulas change instead of reusing business gross margin.
+4. In household mode, choose an income-producing asset and inspect gross asset income, carrying costs, income interruption, and asset-value decline. Notice that a lost payout affects liquidity while a value decline stays economic unless a sale is forced; neither is merged into wages or reused as business gross margin.
 5. Open **Staged survival guide**. The product does not jump from “fine” to “shut down”; it removes risk in reversible pieces.
 6. Add one sentence of real-world context and run **GPT-5.6 AI red team**.
 7. Inspect the **Sovereignty gate**. The app does not assume an exit exists: it labels the exit verified, conditional, or absent, separates calculated damage from personal tolerable loss, and states a re-entry condition.

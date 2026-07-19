@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import {
+  ASSET_PROFILES,
   calculateStressTest,
   DEFAULT_STRESS,
   PROFILE_PRESETS,
@@ -9,6 +10,7 @@ import {
   REGIONS,
   SIZE_BANDS_BY_SUBJECT,
   type BusinessInputs,
+  type AssetProfile,
   type EngineResult,
   type LifelineKey,
   type Locale,
@@ -70,7 +72,8 @@ type NumericSubjectKey =
   | "monthlyRevenue" | "grossMargin" | "fixedCosts" | "cash"
   | "receivables" | "receivableDays" | "inventory" | "shortDebt"
   | "concentration" | "housingPayment" | "monthlyDebtPayments"
-  | "creditCardDebt" | "otherConsumerDebt" | "liquidInvestments";
+  | "creditCardDebt" | "otherConsumerDebt" | "liquidInvestments"
+  | "incomeAssetValue" | "monthlyAssetIncome" | "assetCarryingCosts";
 
 const copy = {
   zh: {
@@ -93,7 +96,7 @@ const copy = {
     shock: "即时流动性冲击",
     buffer: "可动用缓冲",
     first: "最先爆点",
-    lifelines: "五条命 · 最弱的先断",
+    lifelines: "生命线 · 最弱的先断",
     businessTitle: "① 主体事实",
     businessSub: "选择美国企业、无雇员个体经营者或个人家庭。模板只载入可修改的演示数字，不会替你预测。",
     weatherTitle: "② 坏天气",
@@ -102,6 +105,7 @@ const copy = {
     profile: "美国常见画像 / 行业",
     sizeBand: "规模 / 家庭结构（仅作语境）",
     region: "美国人口普查区域",
+    assetProfile: "产生收入的资产类型",
     subjects: { business: "企业", self_employed: "个体经营 / 自由职业", household: "个人 / 家庭" },
     fields: {
       monthlyRevenue: "月营收",
@@ -117,7 +121,10 @@ const copy = {
       monthlyDebtPayments: "其他月债务还款",
       creditCardDebt: "信用卡余额",
       otherConsumerDebt: "房贷 / 车贷 / 学贷等余额",
-      liquidInvestments: "可变现储蓄与投资",
+      liquidInvestments: "其他可动用储备（不含下方收入资产）",
+      incomeAssetValue: "收入型资产权益 / 市值",
+      monthlyAssetIncome: "月资产收入（成本前）",
+      assetCarryingCosts: "月持有成本 / 债务支出",
     },
     stresses: {
       revenueDrop: "营收下滑",
@@ -131,6 +138,9 @@ const copy = {
       emergencyExpense: "医疗 / 维修等意外支出",
       debtPaymentIncrease: "月债务还款上升",
       liquidAssetHaircut: "可变现资产折价",
+      assetIncomeDrop: "资产月收入下降",
+      assetIncomeInterruption: "资产收入完全中断",
+      assetValueDrop: "收入型资产价值下跌",
     },
     guideTitle: "③ 分段求生指南 · 一点一点解开",
     guideSub: "每一步只撤一部分筹码，每一步都保留下一次选择的资格。",
@@ -195,7 +205,7 @@ const copy = {
     shock: "Immediate liquidity shock",
     buffer: "Available buffer",
     first: "First failure point",
-    lifelines: "Five lifelines · the weakest breaks first",
+    lifelines: "Lifelines · the weakest breaks first",
     businessTitle: "① Subject facts",
     businessSub: "Choose a U.S. employer business, nonemployer/sole proprietor, or household. Presets only load editable demo values; they never predict your future.",
     weatherTitle: "② Bad weather",
@@ -204,6 +214,7 @@ const copy = {
     profile: "Common U.S. profile / sector",
     sizeBand: "Size / household structure (context only)",
     region: "U.S. Census region",
+    assetProfile: "Income-producing asset type",
     subjects: { business: "Employer business", self_employed: "Independent / sole proprietor", household: "Individual / household" },
     fields: {
       monthlyRevenue: "Monthly net sales / take-home income",
@@ -219,7 +230,10 @@ const copy = {
       monthlyDebtPayments: "Other monthly debt payments",
       creditCardDebt: "Credit card balance",
       otherConsumerDebt: "Mortgage / auto / student / other debt",
-      liquidInvestments: "Accessible savings & investments",
+      liquidInvestments: "Other accessible reserves (exclude income assets below)",
+      incomeAssetValue: "Income-asset equity / market value",
+      monthlyAssetIncome: "Monthly asset income (before costs)",
+      assetCarryingCosts: "Monthly carrying costs / debt service",
     },
     stresses: {
       revenueDrop: "Revenue drop",
@@ -233,6 +247,9 @@ const copy = {
       emergencyExpense: "Medical / repair emergency",
       debtPaymentIncrease: "Debt-payment increase",
       liquidAssetHaircut: "Liquid-asset haircut",
+      assetIncomeDrop: "Monthly asset-income drop",
+      assetIncomeInterruption: "Full asset-income interruption",
+      assetValueDrop: "Income-asset value decline",
     },
     guideTitle: "③ Staged survival guide",
     guideSub: "Remove risk in pieces. Every move should preserve another choice.",
@@ -305,12 +322,23 @@ const profileNames: Record<Profile, { zh: string; en: string }> = {
   "Near-retirement Household": { zh: "临近退休家庭", en: "Near-retirement Household" },
 };
 
+const assetProfileNames: Record<AssetProfile, { zh: string; en: string }> = {
+  "None / cash only": { zh: "无 / 仅现金", en: "None / cash only" },
+  "Rental real estate": { zh: "出租房地产", en: "Rental real estate" },
+  "Public stocks / ETFs": { zh: "上市股票 / ETF", en: "Public stocks / ETFs" },
+  REITs: { zh: "房地产投资信托（REITs）", en: "REITs" },
+  "Private business interest": { zh: "非上市企业权益", en: "Private business interest" },
+  "Bonds / CDs / Treasuries": { zh: "债券 / 存单 / 美国国债", en: "Bonds / CDs / Treasuries" },
+  "Mixed income portfolio": { zh: "混合收入型资产组合", en: "Mixed income portfolio" },
+};
+
 const lifelineNames: Record<LifelineKey, { zh: string; en: string }> = {
   cash: { zh: "现金", en: "Cash" },
   margin: { zh: "毛利", en: "Margin" },
   collection: { zh: "回款", en: "Collection" },
   leverage: { zh: "杠杆", en: "Leverage" },
   concentration: { zh: "集中度", en: "Concentration" },
+  asset: { zh: "资产回报", en: "Asset return" },
 };
 
 const householdLifelineNames: Record<LifelineKey, { zh: string; en: string }> = {
@@ -319,6 +347,7 @@ const householdLifelineNames: Record<LifelineKey, { zh: string; en: string }> = 
   collection: { zh: "住房负担", en: "Housing burden" },
   leverage: { zh: "偿债负担", en: "Debt service" },
   concentration: { zh: "收入集中度", en: "Income concentration" },
+  asset: { zh: "资产回报", en: "Asset-return resilience" },
 };
 
 const stageIndex = { signal: 0, trend: 1, contagion: 2, emergency: 3 } as const;
@@ -522,6 +551,7 @@ export default function RiskSovereigntyApp() {
   const householdFields: NumericSubjectKey[] = [
     "monthlyRevenue", "fixedCosts", "housingPayment", "monthlyDebtPayments",
     "cash", "liquidInvestments", "creditCardDebt", "otherConsumerDebt", "concentration",
+    "incomeAssetValue", "monthlyAssetIncome", "assetCarryingCosts",
   ];
   const fieldKeys = business.subjectType === "household" ? householdFields : operatingFields;
   const fieldConfig: Array<{
@@ -543,6 +573,9 @@ export default function RiskSovereigntyApp() {
     fixedCosts: { zh: "月必要生活支出（不含住房与债务）", en: "Essential monthly spending (ex housing/debt)" },
     cash: { zh: "银行现金与活期储蓄", en: "Bank cash & on-demand savings" },
     concentration: { zh: "主要收入来源占比", en: "Primary income-source share" },
+    incomeAssetValue: { zh: "收入型资产权益 / 市值（不计入流动缓冲）", en: "Income-asset equity / value (not in liquid buffer)" },
+    monthlyAssetIncome: { zh: "月租金 / 股息 / 分配收入（成本前）", en: "Monthly rent / dividends / distributions (before costs)" },
+    assetCarryingCosts: { zh: "月按揭 / 税费 / 保险 / 维修等持有成本", en: "Monthly mortgage / tax / insurance / upkeep carrying costs" },
   };
   const fieldLabel = (key: NumericSubjectKey) =>
     business.subjectType === "household" && householdFieldLabels[key]
@@ -550,7 +583,7 @@ export default function RiskSovereigntyApp() {
       : t.fields[key];
 
   const operatingStress: Array<keyof StressInputs> = ["revenueDrop", "marginDrop", "paymentDelay", "customerLoss", "debtCall", "inventoryImpairment"];
-  const householdStress: Array<keyof StressInputs> = ["revenueDrop", "incomeInterruption", "expenseIncrease", "emergencyExpense", "debtPaymentIncrease", "debtCall", "liquidAssetHaircut"];
+  const householdStress: Array<keyof StressInputs> = ["revenueDrop", "incomeInterruption", "expenseIncrease", "emergencyExpense", "debtPaymentIncrease", "debtCall", "liquidAssetHaircut", "assetIncomeDrop", "assetIncomeInterruption", "assetValueDrop"];
   const stressKeys = business.subjectType === "household" ? householdStress : operatingStress;
   const stressConfig: Array<{
     key: keyof StressInputs;
@@ -558,8 +591,8 @@ export default function RiskSovereigntyApp() {
     suffix: string;
   }> = stressKeys.map((key) => ({
     key,
-    max: key === "paymentDelay" ? 180 : key === "marginDrop" ? 40 : key === "incomeInterruption" ? 12 : key === "emergencyExpense" ? 50 : key === "debtPaymentIncrease" ? 100 : 100,
-    suffix: key === "paymentDelay" ? (locale === "zh" ? " 天" : " days") : key === "marginDrop" ? (locale === "zh" ? " 个点" : " pts") : key === "incomeInterruption" ? (locale === "zh" ? " 个月" : " months") : key === "emergencyExpense" ? "k" : "%",
+    max: key === "paymentDelay" ? 180 : key === "marginDrop" ? 40 : key === "incomeInterruption" || key === "assetIncomeInterruption" ? 12 : key === "emergencyExpense" ? 50 : key === "debtPaymentIncrease" ? 100 : 100,
+    suffix: key === "paymentDelay" ? (locale === "zh" ? " 天" : " days") : key === "marginDrop" ? (locale === "zh" ? " 个点" : " pts") : key === "incomeInterruption" || key === "assetIncomeInterruption" ? (locale === "zh" ? " 个月" : " months") : key === "emergencyExpense" ? "k" : "%",
   }));
   const stageActions = business.subjectType === "household"
     ? (locale === "zh"
@@ -689,10 +722,20 @@ export default function RiskSovereigntyApp() {
               </select>
             </label>
           </div>
+          {business.subjectType === "household" && (
+            <div className="input-grid">
+              <label className="number-field" style={{ gridColumn: "1 / -1" }}>
+                <span>{t.assetProfile}</span>
+                <select value={business.assetProfile} onChange={(event) => updateBusiness("assetProfile", event.target.value as AssetProfile)}>
+                  {ASSET_PROFILES.map((profile) => <option key={profile} value={profile}>{assetProfileNames[profile][locale]}</option>)}
+                </select>
+              </label>
+            </div>
+          )}
           <div className="input-grid">
             {fieldConfig.map(({ key, min, max, step, suffix }) => (
               <label className="number-field" key={key}>
-                <span>{fieldLabel(key)}</span>
+                <span title={fieldLabel(key)}>{fieldLabel(key)}</span>
                 <div>
                   <input
                     type="number"
