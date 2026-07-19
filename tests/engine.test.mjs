@@ -30,6 +30,13 @@ test("worse weather never creates more runway", () => {
   assert.ok(stressed.stressedNetCashFlow <= calm.stressedNetCashFlow);
 });
 
+test("operating cost inflation reduces business cash flow", () => {
+  const calm = calculateStressTest({ ...baseCase, stress: { ...DEFAULT_STRESS, expenseIncrease: 0 } });
+  const costShock = calculateStressTest({ ...baseCase, stress: { ...DEFAULT_STRESS, expenseIncrease: 25 } });
+  assert.ok(costShock.stressedNetCashFlow < calm.stressedNetCashFlow);
+  assert.ok(costShock.calculationTrace.some(({ id }) => id === "stressed_fixed_costs"));
+});
+
 test("normalization clamps adversarial numeric input", () => {
   const normalized = normalizeRiskCase({
     ...baseCase,
@@ -57,7 +64,7 @@ test("engine exposes evidence and correctly labels collection days", () => {
   const result = calculateStressTest({ ...baseCase, stress: DEFAULT_STRESS });
   assert.deepEqual(
     result.calculationTrace.map(({ id }) => id),
-    ["stressed_revenue", "monthly_cash_flow", "liquidity_shock", "asset_impairment", "survival_runway"],
+    ["stressed_revenue", "stressed_fixed_costs", "monthly_cash_flow", "liquidity_shock", "asset_impairment", "survival_runway"],
   );
   assert.equal(result.lifelines.find(({ key }) => key === "collection")?.unit, "days");
   assert.ok(result.lifelines.some(({ key }) => key === result.firstFailure));

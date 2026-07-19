@@ -1,11 +1,24 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { casesForSubject } from "@/lib/caseStudies";
+import {
+  CALIBRATION_SCENARIOS,
+  CALIBRATION_SOURCES,
+  calibrateHistory,
+  historyMetricsForSubject,
+  makeSampleHistory,
+  referencesForProfile,
+  stressRangesForProfile,
+  stressTemplateForProfile,
+  type CalibrationScenario,
+  type HistoryCalibrationResult,
+  type HistoryMetricKey,
+  type MonthlyHistoryRow,
+} from "@/lib/historyCalibration";
 import {
   ASSET_PROFILES,
   calculateStressTest,
-  DEFAULT_STRESS,
   PROFILE_PRESETS,
   PROFILES_BY_SUBJECT,
   REGIONS,
@@ -76,10 +89,111 @@ type NumericSubjectKey =
   | "creditCardDebt" | "otherConsumerDebt" | "liquidInvestments"
   | "incomeAssetValue" | "monthlyAssetIncome" | "assetCarryingCosts";
 
+const historyCopy = {
+  zh: {
+    kicker: "历史校准 · 可选模块",
+    title: "用真实月份，校准你的“坏天气”",
+    subtitle: "填入任意两个以上月份；月份可以不连续。系统按真实时间间隔提取恶化速度，再用行业敏感度和情景乘数放大。它给出压力锚点，不冒充预测。",
+    sample: "当前载入的是隔月示例，请替换成你的真实数据。金额仍以千美元计。",
+    month: "月份",
+    metrics: {
+      revenue: "营业收入 / 到手收入",
+      grossMargin: "毛利率",
+      costs: "固定成本 / 必要支出",
+      receivableDays: "应收账期",
+      debtPayments: "月债务还款",
+      assetIncome: "月资产收入",
+    },
+    scenarios: {
+      guarded: ["普通防守", "已观察恶化 × 1.25"],
+      pessimistic: ["悲观加压", "已观察恶化 × 1.50"],
+      extreme: ["极端断裂", "已观察恶化 × 2.00"],
+    },
+    horizon: "向后加压",
+    months: "个月",
+    extremeLabel: "极端放大倍数",
+    extremeHint: "2.0–10.0 倍；可继续往上加压，收入、毛利和资产跌幅仍以 100% 为物理上限。",
+    add: "增加一个月份",
+    calculate: "计算压力锚点",
+    apply: "应用到坏天气滑杆",
+    confidence: "数据可信度",
+    rhythm: "行业变化节奏",
+    observed: "首末月变化",
+    recommend: "建议压力",
+    trace: "中位月度恶化 × 未来月数 × 情景乘数 × 行业系数",
+    floor: "行业模板底线",
+    noTrend: "历史恶化较弱，使用透明的行业模板底线。",
+    warnings: "解释边界",
+    sources: "美国官方口径与方法来源",
+    remove: "删除月份",
+    howTitle: "这些数字去哪里找？",
+    howSubtitle: "优先使用银行流水、工资单、POS、记账软件和月末报表；始终保持每个月的统计口径一致。",
+    benchmarkTitle: "同行与市场参照",
+    benchmarkSubtitle: "协会和官方数据用于校验方向与量级，不会覆盖你的数据。",
+    guides: {
+      revenue: "企业：POS/开票/记账软件中的净销售额，扣除折扣和退货；家庭：实际到账的税后工资、零工收入。不要把账户互转算作收入。",
+      grossMargin: "（净销售额 − 销货成本）÷ 净销售额。每月保持相同的 COGS 定义，不要把固定管理费用混入。",
+      costs: "企业填每月实际支付的固定现金成本，不含上面的 COGS；家庭填必要生活支出，不含住房和债务还款。",
+      receivableDays: "月末应收账款 ÷ 最近月均赊销额 × 30。只有总销售额时可以近似，但应明确标注。",
+      debtPayments: "填账单要求的实际月还款额，不是债务余额。可变利率或重置后的金额单独做压力。",
+      assetIncome: "只填当月实际收到的租金、股息或分配，按持有成本之前统计；未实现涨跌不算现金收入。",
+    },
+  },
+  en: {
+    kicker: "HISTORY CALIBRATION · OPTIONAL",
+    title: "Turn real months into a defensible bad-weather range",
+    subtitle: "Enter any two or more months; gaps are allowed. The engine uses the actual time distance, extracts the adverse rate, then amplifies it with a visible scenario multiplier and profile sensitivity. This is a stress anchor, not a forecast.",
+    sample: "The current rows are an every-other-month example. Replace them with your own data. Money remains in USD thousands.",
+    month: "Month",
+    metrics: {
+      revenue: "Sales / take-home income",
+      grossMargin: "Gross margin",
+      costs: "Fixed costs / essentials",
+      receivableDays: "Receivable days",
+      debtPayments: "Monthly debt payments",
+      assetIncome: "Monthly asset income",
+    },
+    scenarios: {
+      guarded: ["Guarded", "observed deterioration × 1.25"],
+      pessimistic: ["Pessimistic", "observed deterioration × 1.50"],
+      extreme: ["Extreme break", "observed deterioration × 2.00"],
+    },
+    horizon: "Stress the next",
+    months: "months",
+    extremeLabel: "Extreme multiplier",
+    extremeHint: "2.0–10.0×; keep pushing the break case upward while income, margin, and asset declines retain a physical 100% ceiling.",
+    add: "Add another month",
+    calculate: "Calculate stress anchor",
+    apply: "Apply to Bad weather sliders",
+    confidence: "Data confidence",
+    rhythm: "Profile change rhythm",
+    observed: "First-to-last change",
+    recommend: "Suggested stress",
+    trace: "median adverse monthly rate × horizon × scenario × profile factor",
+    floor: "Profile scenario floor",
+    noTrend: "Observed deterioration is weaker, so the transparent profile floor is used.",
+    warnings: "Interpretation boundary",
+    sources: "U.S. official measurement and method sources",
+    remove: "Remove month",
+    howTitle: "Where do these numbers come from?",
+    howSubtitle: "Start with bank activity, payroll, POS, bookkeeping, and month-end reports. Keep the definition consistent across every month.",
+    benchmarkTitle: "Peer and market references",
+    benchmarkSubtitle: "Association and official data challenge direction and scale; they never overwrite your facts.",
+    guides: {
+      revenue: "Business: net sales from POS, invoicing, or bookkeeping after discounts and returns. Household: after-tax payroll and gig deposits actually received. Exclude transfers between your own accounts.",
+      grossMargin: "(net sales − cost of goods sold) ÷ net sales. Keep the COGS definition consistent and do not mix in fixed overhead.",
+      costs: "Business: recurring fixed cash costs actually paid, excluding COGS above. Household: essential spending excluding housing and debt payments.",
+      receivableDays: "Month-end receivables ÷ recent average monthly credit sales × 30. Total sales may be used as an approximation only when labeled.",
+      debtPayments: "Use the required monthly statement payment, not the debt balance. Stress variable-rate resets separately.",
+      assetIncome: "Use rent, dividends, or distributions actually received before carrying costs. Unrealized gains are not cash income.",
+    },
+  },
+} as const;
+
 const copy = {
   zh: {
     brand: "风险主权压力测试",
-    nav: ["诊断", "填数", "坏天气", "求生指南", "真实案例", "AI 红队", "审计层"],
+    nav: ["诊断", "填数", "坏天气", "历史校准", "求生指南", "真实案例", "AI 红队", "审计层"],
     eyebrow: "RISK SOVEREIGNTY · 风险主权",
     title: "最坏情况下，哪一条命先断？",
     subtitle:
@@ -191,7 +305,7 @@ const copy = {
   },
   en: {
     brand: "Risk Sovereignty Stress Test",
-    nav: ["Diagnosis", "Inputs", "Storm", "Survival", "Cases", "AI Red Team", "Audit"],
+    nav: ["Diagnosis", "Inputs", "Storm", "History", "Survival", "Cases", "AI Red Team", "Audit"],
     eyebrow: "RISK SOVEREIGNTY",
     title: "What breaks first when the world stops cooperating?",
     subtitle:
@@ -472,13 +586,21 @@ function localFallback(engine: EngineResult, locale: Locale): AIReport {
 export default function RiskSovereigntyApp() {
   const [locale, setLocale] = useState<Locale>("en");
   const [business, setBusiness] = useState<BusinessInputs>({ ...PROFILE_PRESETS.Manufacturing });
-  const [stress, setStress] = useState<StressInputs>({ ...DEFAULT_STRESS });
+  const [stress, setStress] = useState<StressInputs>(() => stressTemplateForProfile("Manufacturing", "business"));
+  const [historyRows, setHistoryRows] = useState<MonthlyHistoryRow[]>(
+    () => makeSampleHistory("business", "Manufacturing"),
+  );
+  const [calibrationScenario, setCalibrationScenario] = useState<CalibrationScenario>("pessimistic");
+  const [extremeMultiplier, setExtremeMultiplier] = useState(2);
+  const [historyHorizon, setHistoryHorizon] = useState(6);
+  const [calibration, setCalibration] = useState<HistoryCalibrationResult | null>(null);
   const [context, setContext] = useState("");
   const [report, setReport] = useState<AIReport | null>(null);
   const [audit, setAudit] = useState<Audit | null>(null);
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState("");
   const t = copy[locale];
+  const historyText = historyCopy[locale];
 
   const riskCase = useMemo(
     () => ({ locale, business, stress, context }),
@@ -502,8 +624,11 @@ export default function RiskSovereigntyApp() {
   }
 
   function chooseProfile(profile: Profile) {
-    setBusiness({ ...PROFILE_PRESETS[profile] });
-    setStress({ ...DEFAULT_STRESS });
+    const nextBusiness = { ...PROFILE_PRESETS[profile] };
+    setBusiness(nextBusiness);
+    setStress(stressTemplateForProfile(profile, nextBusiness.subjectType));
+    setHistoryRows(makeSampleHistory(nextBusiness.subjectType, profile));
+    setCalibration(null);
     setReport(null);
     setAudit(null);
   }
@@ -517,6 +642,56 @@ export default function RiskSovereigntyApp() {
     setReport(null);
     setAudit(null);
     setNotice("");
+  }
+
+  function updateHistoryRow<K extends keyof MonthlyHistoryRow>(id: string, key: K, value: MonthlyHistoryRow[K]) {
+    setHistoryRows((current) => current.map((row) => row.id === id ? { ...row, [key]: value } : row));
+    setCalibration(null);
+  }
+
+  function addHistoryRow() {
+    const orderedMonths = historyRows.map(({ month }) => month).filter(Boolean).sort();
+    const lastMonth = orderedMonths.at(-1) ?? "2026-05";
+    const [year, month] = lastMonth.split("-").map(Number);
+    const nextDate = new Date(Date.UTC(year, month, 1));
+    const nextMonth = `${nextDate.getUTCFullYear()}-${String(nextDate.getUTCMonth() + 1).padStart(2, "0")}`;
+    setHistoryRows((current) => [
+      ...current,
+      {
+        id: `history-${Date.now()}`,
+        month: nextMonth,
+        revenue: null,
+        grossMargin: null,
+        costs: null,
+        receivableDays: null,
+        debtPayments: null,
+        assetIncome: null,
+      },
+    ]);
+    setCalibration(null);
+  }
+
+  function removeHistoryRow(id: string) {
+    setHistoryRows((current) => current.filter((row) => row.id !== id));
+    setCalibration(null);
+  }
+
+  function calculateHistoryAnchor() {
+    setCalibration(calibrateHistory({
+      rows: historyRows,
+      subjectType: business.subjectType,
+      profile: business.profile,
+      scenario: calibrationScenario,
+      horizonMonths: historyHorizon,
+      extremeMultiplier,
+    }));
+  }
+
+  function applyHistoryAnchor() {
+    if (!calibration) return;
+    setStress((current) => ({ ...current, ...calibration.recommendedStress }));
+    setReport(null);
+    setAudit(null);
   }
 
   async function generateReport() {
@@ -590,18 +765,41 @@ export default function RiskSovereigntyApp() {
       ? householdFieldLabels[key]![locale]
       : t.fields[key];
 
-  const operatingStress: Array<keyof StressInputs> = ["revenueDrop", "marginDrop", "paymentDelay", "customerLoss", "debtCall", "inventoryImpairment"];
+  const operatingStress: Array<keyof StressInputs> = ["revenueDrop", "marginDrop", "expenseIncrease", "paymentDelay", "customerLoss", "debtCall", "inventoryImpairment"];
   const householdStress: Array<keyof StressInputs> = ["revenueDrop", "incomeInterruption", "expenseIncrease", "emergencyExpense", "debtPaymentIncrease", "debtCall", "liquidAssetHaircut", "assetIncomeDrop", "assetIncomeInterruption", "assetValueDrop"];
   const stressKeys = business.subjectType === "household" ? householdStress : operatingStress;
+  const profileStressRanges = stressRangesForProfile(business.profile, business.subjectType);
   const stressConfig: Array<{
     key: keyof StressInputs;
     max: number;
     suffix: string;
   }> = stressKeys.map((key) => ({
     key,
-    max: key === "paymentDelay" ? 180 : key === "marginDrop" ? 40 : key === "incomeInterruption" || key === "assetIncomeInterruption" ? 12 : key === "emergencyExpense" ? 50 : key === "debtPaymentIncrease" ? 100 : 100,
+    max: profileStressRanges[key],
     suffix: key === "paymentDelay" ? (locale === "zh" ? " 天" : " days") : key === "marginDrop" ? (locale === "zh" ? " 个点" : " pts") : key === "incomeInterruption" || key === "assetIncomeInterruption" ? (locale === "zh" ? " 个月" : " months") : key === "emergencyExpense" ? "k" : "%",
   }));
+  const historyMetricKeys = historyMetricsForSubject(business.subjectType);
+  const profileReferences = referencesForProfile(business.profile, business.subjectType);
+  const historyMetricSuffix: Record<HistoryMetricKey, string> = {
+    revenue: "k",
+    grossMargin: "%",
+    costs: "k",
+    receivableDays: locale === "zh" ? "天" : "d",
+    debtPayments: "k",
+    assetIncome: "k",
+  };
+  const stressDisplayName = (key: keyof StressInputs) => {
+    if (key === "expenseIncrease" && business.subjectType !== "household") {
+      return locale === "zh" ? "固定现金成本上涨" : "Fixed cash-cost increase";
+    }
+    if (key === "revenueDrop" && business.subjectType === "household") {
+      return locale === "zh" ? "到手收入下降" : "Take-home income drop";
+    }
+    if (key === "debtCall" && business.subjectType === "household") {
+      return locale === "zh" ? "债务余额提前到期 / 催收" : "Consumer debt accelerated";
+    }
+    return t.stresses[key];
+  };
   const stageActions = business.subjectType === "household"
     ? (locale === "zh"
         ? [
@@ -627,7 +825,7 @@ export default function RiskSovereigntyApp() {
         </a>
         <div className="nav-tabs">
           {t.nav.map((label, index) => (
-            <a key={label} className={index === 0 ? "active" : ""} href={`#${["diagnosis", "inputs", "storm", "survival", "evidence", "ai", "audit"][index]}`}>
+            <a key={label} className={index === 0 ? "active" : ""} href={`#${["diagnosis", "inputs", "storm", "history-calibration", "survival", "evidence", "ai", "audit"][index]}`}>
               {label}
             </a>
           ))}
@@ -765,7 +963,7 @@ export default function RiskSovereigntyApp() {
           <div className="stress-list">
             {stressConfig.map(({ key, max, suffix }) => (
               <label className="stress-row" key={key}>
-                <span><b>{key === "revenueDrop" && business.subjectType === "household" ? (locale === "zh" ? "月收入下降" : "Take-home income drop") : key === "debtCall" && business.subjectType === "household" ? (locale === "zh" ? "债务余额提前到期 / 催收" : "Consumer debt accelerated") : t.stresses[key]}</b><em>{stress[key]}{suffix}</em></span>
+                <span><b>{stressDisplayName(key)}</b><em>{stress[key]}{suffix}</em></span>
                 <input
                   type="range"
                   min="0"
@@ -782,6 +980,176 @@ export default function RiskSovereigntyApp() {
             <b>{locale === "zh" ? "风险不是概率 × 恐惧，而是敞口 × 没有退路" : "Risk is exposure multiplied by the absence of an exit"}</b>
           </div>
         </article>
+      </section>
+
+      <section className="glass-card section-card history-section" id="history-calibration">
+        <div className="history-heading">
+          <div className="section-title stacked">
+            <span className="card-kicker">{historyText.kicker}</span>
+            <h2>{historyText.title}</h2>
+            <p>{historyText.subtitle}</p>
+          </div>
+          <div className="history-confidence-preview">
+            <span>{historyText.horizon}</span>
+            <label>
+              <input
+                type="number"
+                min="1"
+                max="18"
+                value={historyHorizon}
+                onChange={(event) => {
+                  setHistoryHorizon(Math.max(1, Math.min(18, Number(event.target.value) || 1)));
+                  setCalibration(null);
+                }}
+              />
+              <i>{historyText.months}</i>
+            </label>
+          </div>
+        </div>
+
+        <div className="history-scenario-grid">
+          {(Object.keys(CALIBRATION_SCENARIOS) as CalibrationScenario[]).map((scenario) => (
+            <button
+              key={scenario}
+              className={calibrationScenario === scenario ? "selected" : ""}
+              onClick={() => {
+                setCalibrationScenario(scenario);
+                setCalibration(null);
+              }}
+            >
+              <b>{historyText.scenarios[scenario][0]}</b>
+              <span>{historyText.scenarios[scenario][1]}</span>
+            </button>
+          ))}
+        </div>
+        {calibrationScenario === "extreme" && (
+          <label className="extreme-control">
+            <span><b>{historyText.extremeLabel}</b><small>{historyText.extremeHint}</small></span>
+            <div>
+              <input
+                type="range"
+                min="2"
+                max="10"
+                step="0.25"
+                value={extremeMultiplier}
+                onChange={(event) => {
+                  setExtremeMultiplier(Number(event.target.value));
+                  setCalibration(null);
+                }}
+              />
+              <strong>{extremeMultiplier.toFixed(2)}×</strong>
+            </div>
+          </label>
+        )}
+
+        <div className="history-sample-note">{historyText.sample}</div>
+        <div className="history-reference-grid">
+          <details className="history-guide" open>
+            <summary><b>{historyText.howTitle}</b><span>{historyText.howSubtitle}</span></summary>
+            <div>
+              {historyMetricKeys.map((metric) => (
+                <article key={metric}>
+                  <strong>{historyText.metrics[metric]}</strong>
+                  <p>{historyText.guides[metric]}</p>
+                </article>
+              ))}
+            </div>
+          </details>
+          <aside className="benchmark-panel">
+            <div><b>{historyText.benchmarkTitle}</b><span>{historyText.benchmarkSubtitle}</span></div>
+            {profileReferences.map((reference) => (
+              <a href={reference.url} target="_blank" rel="noreferrer" key={`${reference.title}-${reference.period}`}>
+                <span>{reference.period}</span>
+                <strong>{reference.title}</strong>
+                <p>{reference.signal}</p>
+                <em>{reference.use}</em>
+              </a>
+            ))}
+          </aside>
+        </div>
+        <div className="history-table-wrap">
+          <div className="history-table history-table-head" style={{ "--history-columns": historyMetricKeys.length } as CSSProperties}>
+            <span>{historyText.month}</span>
+            {historyMetricKeys.map((metric) => <span key={metric}>{historyText.metrics[metric]}</span>)}
+            <span />
+          </div>
+          {historyRows.map((row) => (
+            <div className="history-table" style={{ "--history-columns": historyMetricKeys.length } as CSSProperties} key={row.id}>
+              <input
+                type="month"
+                value={row.month}
+                aria-label={historyText.month}
+                onChange={(event) => updateHistoryRow(row.id, "month", event.target.value)}
+              />
+              {historyMetricKeys.map((metric) => (
+                <label key={metric}>
+                  <input
+                    type="number"
+                    min="0"
+                    step={metric === "grossMargin" || metric === "receivableDays" ? 1 : 0.1}
+                    value={row[metric] ?? ""}
+                    aria-label={`${historyText.metrics[metric]} ${row.month}`}
+                    placeholder="—"
+                    onChange={(event) => updateHistoryRow(
+                      row.id,
+                      metric,
+                      event.target.value === "" ? null : Number(event.target.value),
+                    )}
+                  />
+                  <i>{historyMetricSuffix[metric]}</i>
+                </label>
+              ))}
+              <button className="history-remove" aria-label={historyText.remove} title={historyText.remove} onClick={() => removeHistoryRow(row.id)}>×</button>
+            </div>
+          ))}
+        </div>
+
+        <div className="history-actions">
+          <button className="ghost-button" onClick={addHistoryRow}>+ {historyText.add}</button>
+          <button className="primary-button" onClick={calculateHistoryAnchor}>{historyText.calculate}</button>
+        </div>
+
+        {calibration && (
+          <div className="history-result">
+            <div className="history-result-heading">
+              <div>
+                <span>{historyText.confidence}: <b data-confidence={calibration.confidence}>{calibration.confidence}</b></span>
+                <span>{historyText.rhythm}: <b>{calibration.industryRhythm}</b></span>
+                <span>×{calibration.industryFactor.toFixed(2)} profile</span>
+              </div>
+              <button className="primary-button" disabled={!calibration.metrics.length} onClick={applyHistoryAnchor}>{historyText.apply}</button>
+            </div>
+
+            <div className="history-result-grid">
+              {calibration.metrics.map((metric) => (
+                <article key={metric.metric}>
+                  <span>{stressDisplayName(metric.stressKey)}</span>
+                  <strong>{metric.recommendedStress}{metric.observedUnit}</strong>
+                  <dl>
+                    <div><dt>{historyText.observed}</dt><dd>{metric.observedChange > 0 ? "+" : ""}{metric.observedChange}{metric.observedUnit}</dd></div>
+                    <div><dt>{historyText.recommend}</dt><dd>{metric.firstMonth} → {metric.lastMonth}</dd></div>
+                  </dl>
+                  <p>{historyText.trace}</p>
+                  {metric.floorStress >= metric.trendStress && <em>{historyText.floor}: {metric.floorStress}{metric.observedUnit}. {historyText.noTrend}</em>}
+                </article>
+              ))}
+            </div>
+
+            {!!calibration.warnings.length && (
+              <div className="history-warnings">
+                <b>{historyText.warnings}</b>
+                {calibration.warnings.map((warning) => <p key={warning}>{warning}</p>)}
+              </div>
+            )}
+          </div>
+        )}
+
+        <details className="history-sources">
+          <summary>{historyText.sources}</summary>
+          <div>
+            {CALIBRATION_SOURCES.map((source) => <a key={source.url} href={source.url} target="_blank" rel="noreferrer">{source.label} ↗</a>)}
+          </div>
+        </details>
       </section>
 
       <section className="glass-card section-card" id="survival">

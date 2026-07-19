@@ -32,22 +32,22 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Risk Sovereignty",
-    description: "AI stress testing for the choices you still want to have tomorrow.",
+    description: "Turn real monthly deterioration into a profile-specific stress anchor, find what breaks first, and preserve your exits.",
     type: "website",
     images: [
       {
-        url: "/risk-sovereignty-social-us.png",
-        width: 1536,
-        height: 1024,
-        alt: "Risk Sovereignty AI stress-test control room with five financial lifelines",
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Risk Sovereignty history-to-stress diagnostic engine and protected exit paths",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Risk Sovereignty",
-    description: "AI stress testing for the choices you still want to have tomorrow.",
-    images: ["/risk-sovereignty-social-us.png"],
+    description: "Turn real monthly deterioration into a profile-specific stress anchor, find what breaks first, and preserve your exits.",
+    images: ["/og.png"],
   },
 };
 

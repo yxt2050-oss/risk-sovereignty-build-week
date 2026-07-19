@@ -329,14 +329,14 @@ export function normalizeRiskCase(input: RiskCase): RiskCase {
     stress: {
       revenueDrop: clamp(stress.revenueDrop, 0, 100),
       marginDrop: clamp(stress.marginDrop, 0, 80),
-      paymentDelay: clamp(stress.paymentDelay, 0, 365),
+      paymentDelay: clamp(stress.paymentDelay, 0, 730),
       customerLoss: clamp(stress.customerLoss, 0, 100),
       debtCall: clamp(stress.debtCall, 0, 100),
       inventoryImpairment: clamp(stress.inventoryImpairment, 0, 100),
-      expenseIncrease: clamp(stress.expenseIncrease, 0, 100),
+      expenseIncrease: clamp(stress.expenseIncrease, 0, 500),
       incomeInterruption: clamp(stress.incomeInterruption, 0, 24),
       emergencyExpense: clamp(stress.emergencyExpense, 0, 100000),
-      debtPaymentIncrease: clamp(stress.debtPaymentIncrease, 0, 200),
+      debtPaymentIncrease: clamp(stress.debtPaymentIncrease, 0, 500),
       liquidAssetHaircut: clamp(stress.liquidAssetHaircut, 0, 100),
       assetIncomeDrop: clamp(stress.assetIncomeDrop, 0, 100),
       assetIncomeInterruption: clamp(stress.assetIncomeInterruption, 0, 24),
@@ -362,7 +362,8 @@ function calculateOperatingCase(b: SubjectInputs, s: StressInputs): EngineResult
   const stressedRevenue = b.monthlyRevenue * (1 - s.revenueDrop / 100) * (1 - s.customerLoss / 100);
   const stressedGrossMargin = Math.max(0, b.grossMargin - s.marginDrop);
   const stressedGrossProfit = stressedRevenue * (stressedGrossMargin / 100);
-  const stressedNetCashFlow = stressedGrossProfit - b.fixedCosts;
+  const stressedFixedCosts = b.fixedCosts * (1 + s.expenseIncrease / 100);
+  const stressedNetCashFlow = stressedGrossProfit - stressedFixedCosts;
   const monthlyBurn = Math.max(0, -stressedNetCashFlow);
   const collectionFreeze = b.monthlyRevenue * (s.paymentDelay / 30) + b.receivables * (s.customerLoss / 100);
   const debtCallShock = b.shortDebt * (s.debtCall / 100);
@@ -376,7 +377,7 @@ function calculateOperatingCase(b: SubjectInputs, s: StressInputs): EngineResult
   const sixMonthPass = availableBuffer >= sixMonthNeed;
   const lifelines: Lifeline[] = [
     { key: "cash", score: sixMonthNeed < 0.01 ? (availableBuffer >= 0 ? 100 : 0) : clamp((Math.max(0, availableBuffer) / sixMonthNeed) * 100, 0, 100), metric: runwayMonths, unit: "months" },
-    { key: "margin", score: clamp((stressedGrossProfit / Math.max(1, b.fixedCosts)) * 100, 0, 100), metric: stressedGrossMargin, unit: "%" },
+    { key: "margin", score: clamp((stressedGrossProfit / Math.max(1, stressedFixedCosts)) * 100, 0, 100), metric: stressedGrossMargin, unit: "%" },
     { key: "collection", score: clamp(100 - ((b.receivableDays + s.paymentDelay) / 150) * 75 - s.customerLoss * 0.25, 0, 100), metric: b.receivableDays + s.paymentDelay, unit: "days" },
     { key: "leverage", score: clamp(100 - (debtCallShock / Math.max(1, b.cash)) * 100, 0, 100), metric: s.debtCall, unit: "%" },
     { key: "concentration", score: clamp(100 - Math.max(b.concentration, s.customerLoss), 0, 100), metric: Math.max(b.concentration, s.customerLoss), unit: "%" },
@@ -392,7 +393,8 @@ function calculateOperatingCase(b: SubjectInputs, s: StressInputs): EngineResult
     baseNetCashFlow: round(baseNetCashFlow), stressedRevenue: round(stressedRevenue), stressedGrossMargin: round(stressedGrossMargin), stressedNetCashFlow: round(stressedNetCashFlow), monthlyBurn: round(monthlyBurn), collectionFreeze: round(collectionFreeze), debtCallShock: round(debtCallShock), inventoryLoss: round(inventoryLoss), assetIncome: 0, stressedAssetIncome: 0, assetValueLoss: 0, liquidityShock: round(liquidityShock), oneTimeShock: round(oneTimeShock), availableBuffer: round(availableBuffer), runwayMonths: round(runwayMonths), runwayCapped, sixMonthNeed: round(sixMonthNeed), sixMonthPass, lifelines,
     calculationTrace: [
       { id: "stressed_revenue", formula: "revenue × (1 − market drop) × (1 − customer loss)", value: round(stressedRevenue) },
-      { id: "monthly_cash_flow", formula: "stressed revenue × stressed margin − fixed cash commitments", value: round(stressedNetCashFlow) },
+      { id: "stressed_fixed_costs", formula: "fixed cash commitments × (1 + cost increase)", value: round(stressedFixedCosts) },
+      { id: "monthly_cash_flow", formula: "stressed revenue × stressed margin − stressed fixed cash commitments", value: round(stressedNetCashFlow) },
       { id: "liquidity_shock", formula: "collection freeze + debt due now", value: round(liquidityShock) },
       { id: "asset_impairment", formula: "inventory book cost × impairment rate (noncash in runway)", value: round(inventoryLoss) },
       { id: "survival_runway", formula: "max(0, cash − immediate liquidity shock) ÷ monthly burn", value: round(runwayMonths) },

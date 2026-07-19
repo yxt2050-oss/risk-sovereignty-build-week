@@ -2,7 +2,7 @@
 
 **An AI red team for U.S. businesses, independent workers, and households that simulates a bad future, finds the first structural failure point, and preserves the right to exit in stages.**
 
-![Risk Sovereignty social card](public/risk-sovereignty-social-us.png)
+![Risk Sovereignty social card](public/og.png)
 
 Most financial software optimizes a forecast. Risk Sovereignty starts with a different question: _if the world stops cooperating, what breaks first?_ It does not claim to predict the future. It lets a user construct an explicit bad future, reveals the first point at which the structure loses optionality, then asks GPT-5.6 to challenge the scenario and design three reversible interventions.
 
@@ -60,7 +60,11 @@ The interface uses USD thousands, U.S. Census regions, and common U.S. structure
 
 Household asset returns are modeled as a second cash-flow channel rather than merged into wages. Users enter gross monthly rent, dividends, distributions, or other payouts separately from recurring mortgage, tax, insurance, management, maintenance, and similar carrying costs. A scenario can interrupt the income while costs continue. It can also reduce asset equity or market value without pretending that a paper loss instantly left the bank account. Asset presets are editable examples—not performance forecasts, allocation advice, or hidden benchmarks.
 
-No hidden industry, size, or regional multiplier changes a user's numbers. Public data selects understandable fields and presets; submitted facts remain authoritative.
+The history-calibration module accepts non-contiguous monthly observations and measures the median adverse monthly movement across every valid pair of months. It then converts that observed deterioration into an editable stress anchor:
+
+`adverse monthly deterioration × forward horizon × scenario multiplier × profile factor`
+
+This is not a forecast. Each profile also has a transparent minimum floor and its own slider envelope so a restaurant, construction firm, manufacturer, freelancer, gig worker, renter, mortgaged homeowner, and near-retirement household do not inherit the same shock. Guarded and pessimistic modes remain bounded; the extreme mode can amplify the observed trend from 2× to 10×, subject only to physical limits such as a 100% income loss. Public and industry-association data is shown as context, never substituted for the user's ledger.
 
 Primary references:
 
@@ -77,6 +81,8 @@ Primary references:
 
 - Chinese and English interface
 - Three subject modes with 23 editable U.S. profile presets
+- Profile-specific stress defaults and ranges for every business, self-employed, and household structure
+- Historical-data calibration with missing-month support, confidence labeling, industry context, and 1.25× / 1.5× / adjustable 2–10× scenarios
 - Census-region and employee/household-structure context
 - Live “bad weather” sliders
 - Subject-aware lifelines: operating cash/margin/collection/leverage/concentration or household liquidity/labor income/housing/debt service/income concentration/asset return
