@@ -829,6 +829,102 @@ a {
   line-height: 1.65;
 }
 
+.evidence-section {
+  background:
+    radial-gradient(620px 300px at 100% 0%, rgba(255, 201, 107, 0.08), transparent 70%),
+    linear-gradient(160deg, rgba(29, 22, 55, 0.78), rgba(14, 10, 29, 0.9));
+}
+
+.case-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.case-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: 18px;
+  border: 1px solid rgba(160, 120, 255, 0.2);
+  border-radius: 17px;
+  background: rgba(255, 255, 255, 0.025);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.025);
+}
+
+.case-heading > div {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 8px;
+}
+
+.case-heading span {
+  padding: 3px 7px;
+  border: 1px solid rgba(44, 230, 162, 0.2);
+  border-radius: 999px;
+  color: var(--mint);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+}
+
+.case-heading h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 18px;
+}
+
+.case-card dl {
+  display: grid;
+  gap: 10px;
+  margin: 15px 0 18px;
+}
+
+.case-card dl > div {
+  padding-left: 12px;
+  border-left: 2px solid rgba(139, 92, 246, 0.35);
+}
+
+.case-card dt {
+  margin-bottom: 3px;
+  color: #a59dc8;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.case-card dd {
+  margin: 0;
+  color: #cdc6df;
+  font-size: 10.5px;
+  line-height: 1.58;
+}
+
+.case-card a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(160, 120, 255, 0.2);
+  color: var(--mint);
+  font-size: 9px;
+  text-decoration: none;
+}
+
+.case-card a b {
+  color: #b8b1cb;
+  font-weight: 600;
+  text-align: right;
+}
+
+.case-card a:hover b {
+  color: var(--ink);
+}
+
 .ai-section {
   background:
     radial-gradient(520px 260px at 95% -5%, rgba(44, 230, 162, 0.1), transparent 68%),
@@ -1375,6 +1471,7 @@ footer span:last-child {
   .assumption-card { grid-column: auto; }
   .action-stack > article { grid-template-columns: 1fr; }
   .evidence-tags { max-width: none; justify-content: flex-start; }
+  .case-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 760px) {

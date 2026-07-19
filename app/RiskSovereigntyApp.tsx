@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { casesForSubject } from "@/lib/caseStudies";
 import {
   ASSET_PROFILES,
   calculateStressTest,
@@ -78,7 +79,7 @@ type NumericSubjectKey =
 const copy = {
   zh: {
     brand: "风险主权压力测试",
-    nav: ["诊断", "填数", "坏天气", "求生指南", "AI 红队", "审计层"],
+    nav: ["诊断", "填数", "坏天气", "求生指南", "真实案例", "AI 红队", "审计层"],
     eyebrow: "RISK SOVEREIGNTY · 风险主权",
     title: "最坏情况下，哪一条命先断？",
     subtitle:
@@ -152,7 +153,10 @@ const copy = {
       ["保核心客户、核心人员和现金", "停止用新债掩盖旧结构"],
     ],
     here: "你在这里",
-    aiTitle: "④ GPT‑5.6 AI 红队",
+    evidenceTitle: "④ 结构证据库 · 真实失败与退出",
+    evidenceSub: "案例不是预测模板。它们只证明一件事：集中、杠杆、现金和退出权会怎样在同一个坏天气里连锁失效。",
+    evidenceLabels: { failure: "发生了什么", trap: "为什么退不掉", lesson: "主权启示", source: "查看原始来源" },
+    aiTitle: "⑤ GPT‑5.6 AI 红队",
     aiSub:
       "模型先被迫调用确定性压力测试工具，再用严格结构化输出给出因果链与分段行动。",
     contextLabel: "补充真实约束（可选）",
@@ -174,7 +178,7 @@ const copy = {
     actions: "三段行动",
     assumptions: "关键假设",
     ownerQuestion: "留给老板的一问",
-    auditTitle: "⑤ 可审计边界",
+    auditTitle: "⑥ 可审计边界",
     auditSub: "把事实、假设、计算与 AI 判断分开，避免漂亮答案制造虚假确定性。",
     auditLayers: [
       ["INPUT", "主体事实", "只来自用户输入；AI 不得改写"],
@@ -187,7 +191,7 @@ const copy = {
   },
   en: {
     brand: "Risk Sovereignty Stress Test",
-    nav: ["Diagnosis", "Inputs", "Storm", "Survival", "AI Red Team", "Audit"],
+    nav: ["Diagnosis", "Inputs", "Storm", "Survival", "Cases", "AI Red Team", "Audit"],
     eyebrow: "RISK SOVEREIGNTY",
     title: "What breaks first when the world stops cooperating?",
     subtitle:
@@ -261,7 +265,10 @@ const copy = {
       ["Protect core customers, people, and cash", "Stop refinancing structural loss"],
     ],
     here: "you are here",
-    aiTitle: "④ GPT‑5.6 AI red team",
+    evidenceTitle: "④ Structural evidence · failure and exit",
+    evidenceSub: "Cases are not prediction templates. They show how concentration, leverage, cash, and exit rights can fail together in one bad future.",
+    evidenceLabels: { failure: "What happened", trap: "Why exit vanished", lesson: "Sovereignty lesson", source: "Open primary source" },
+    aiTitle: "⑤ GPT‑5.6 AI red team",
     aiSub:
       "The model must call the deterministic stress-test tool first, then return a strict causal chain and staged actions.",
     contextLabel: "Real-world constraints (optional)",
@@ -283,7 +290,7 @@ const copy = {
     actions: "Three staged actions",
     assumptions: "Critical assumptions",
     ownerQuestion: "One question for the owner",
-    auditTitle: "⑤ Auditable boundary",
+    auditTitle: "⑥ Auditable boundary",
     auditSub: "Facts, assumptions, calculations, and AI judgment remain visibly separate.",
     auditLayers: [
       ["INPUT", "Subject facts", "Only user-supplied; AI cannot rewrite them"],
@@ -478,6 +485,7 @@ export default function RiskSovereigntyApp() {
     [locale, business, stress, context],
   );
   const engine = useMemo(() => calculateStressTest(riskCase), [riskCase]);
+  const structuralCases = useMemo(() => casesForSubject(business.subjectType), [business.subjectType]);
   const currentStage = stageIndex[engine.stage];
   const runwayWidth = Math.min(100, (engine.runwayMonths / 24) * 100);
 
@@ -619,7 +627,7 @@ export default function RiskSovereigntyApp() {
         </a>
         <div className="nav-tabs">
           {t.nav.map((label, index) => (
-            <a key={label} className={index === 0 ? "active" : ""} href={`#${["diagnosis", "inputs", "storm", "survival", "ai", "audit"][index]}`}>
+            <a key={label} className={index === 0 ? "active" : ""} href={`#${["diagnosis", "inputs", "storm", "survival", "evidence", "ai", "audit"][index]}`}>
               {label}
             </a>
           ))}
@@ -788,6 +796,32 @@ export default function RiskSovereigntyApp() {
         </div>
         <div className="survival-question">
           {locale === "zh" ? "一秒自测：某个环节出问题时，你能不能只处理这一个环节——还是整个系统要一起陪葬？" : "One-second test: when one part fails, can you isolate it—or must the entire system fail with it?"}
+        </div>
+      </section>
+
+      <section className="glass-card section-card evidence-section" id="evidence">
+        <div className="section-title stacked">
+          <h2>{t.evidenceTitle}</h2>
+          <p>{t.evidenceSub}</p>
+        </div>
+        <div className="case-grid">
+          {structuralCases.map((item) => (
+            <article className="case-card" key={item.id}>
+              <div className="case-heading">
+                <div><span>{item.geography}</span><span>{item.period}</span></div>
+                <h3>{item.name}</h3>
+              </div>
+              <dl>
+                <div><dt>{t.evidenceLabels.failure}</dt><dd>{item.failure[locale]}</dd></div>
+                <div><dt>{t.evidenceLabels.trap}</dt><dd>{item.trap[locale]}</dd></div>
+                <div><dt>{t.evidenceLabels.lesson}</dt><dd>{item.lesson[locale]}</dd></div>
+              </dl>
+              <a href={item.sourceUrl} target="_blank" rel="noreferrer">
+                <span>{t.evidenceLabels.source}</span>
+                <b>{item.sourceLabel}</b>
+              </a>
+            </article>
+          ))}
         </div>
       </section>
 

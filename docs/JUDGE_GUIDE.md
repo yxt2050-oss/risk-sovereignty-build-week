@@ -7,10 +7,11 @@
 3. Switch between **Employer business**, **Independent / sole proprietor**, and **Individual / household**. Presets are editable examples, never hidden benchmarks.
 4. In household mode, choose an income-producing asset and inspect gross asset income, carrying costs, income interruption, and asset-value decline. Notice that a lost payout affects liquidity while a value decline stays economic unless a sale is forced; neither is merged into wages or reused as business gross margin.
 5. Open **Staged survival guide**. The product does not jump from “fine” to “shut down”; it removes risk in reversible pieces.
-6. Add one sentence of real-world context and run **GPT-5.6 AI red team**.
-7. Inspect the **Sovereignty gate**. The app does not assume an exit exists: it labels the exit verified, conditional, or absent, separates calculated damage from personal tolerable loss, and states a re-entry condition.
-8. Inspect exactly three intervention phases, critical assumptions, preserved upside, and evidence IDs.
-9. End at **Auditable boundary** and verify the separation between input, assumption, calculation, and AI judgment.
+6. Inspect **Structural evidence**. The selected subject changes the cases. Each card distinguishes the documented failure, the disappearing exit, and the method lesson, then links to a primary source; cases never change the calculation.
+7. Add one sentence of real-world context and run **GPT-5.6 AI red team**.
+8. Inspect the **Sovereignty gate**. The app does not assume an exit exists: it labels the exit verified, conditional, or absent, separates calculated damage from personal tolerable loss, and states a re-entry condition.
+9. Inspect exactly three intervention phases, critical assumptions, preserved upside, and evidence IDs.
+10. End at **Auditable boundary** and verify the separation between input, assumption, calculation, and AI judgment.
 
 ## What GPT-5.6 does
 

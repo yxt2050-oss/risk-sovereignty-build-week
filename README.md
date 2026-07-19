@@ -85,7 +85,10 @@ Primary references:
 - GPT-5.6 AI red-team report with deterministic local fallback
 - Sovereignty gate: exit reality, maximum tolerable loss, re-entry condition, preserved upside, and decision quality
 - Explicit input / assumption / calculation / AI audit boundary
+- Subject-aware structural case library with primary-source links: U.S. failures first, plus selected European and household evidence
 - Responsive deep-space neon interface derived from the original C visual prototype
+
+The case library restores and internationalizes the original prototype's “lessons from failure” layer. Cases never alter the user's calculation and are not presented as proof that the same outcome will recur. Each card separates what happened, why the exit disappeared, and the structural lesson, then links to the underlying regulator, filing, parliamentary report, or research paper.
 
 ## Run locally
 

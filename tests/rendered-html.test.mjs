@@ -40,8 +40,11 @@ test("ships semantic controls and the audit boundary", async () => {
   assert.match(html, /<main[^>]*class="app-shell"/);
   assert.match(html, /type="range"/);
   assert.match(html, /id="ai"/);
+  assert.match(html, /id="evidence"/);
   assert.match(html, /id="audit"/);
   assert.match(html, /Generate GPT(?:-|‑)?5\.6 survival report/);
   assert.match(html, /Employer business/);
   assert.match(html, /Individual \/ household/);
+  assert.match(html, /Silicon Valley Bank/);
+  assert.match(html, /Open primary source/);
 });

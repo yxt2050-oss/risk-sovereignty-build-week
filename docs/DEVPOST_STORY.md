@@ -39,6 +39,8 @@ The system answers four questions:
 3. What can be isolated or reduced before the failure spreads?
 4. What action preserves the right to choose again?
 
+A subject-aware evidence library then grounds the method in public postmortems. U.S. business cases such as Silicon Valley Bank, Washington Mutual, and Kodak appear first; Carillion adds a European cash-conversion example; Archegos, an NFL income-cliff cohort, and Federal Reserve homeowner research extend the same structural reasoning to individual wealth and household balance sheets. The cases do not modify the engine or predict repetition. Each one separates the failure, the disappearing exit, and the reusable sovereignty lesson, with a primary-source link.
+
 ## The core idea: preserve the next move
 
 Risk Sovereignty is not risk avoidance. Once downside is bounded and an exit is credible, the method supports courageous participation and staged scaling.
