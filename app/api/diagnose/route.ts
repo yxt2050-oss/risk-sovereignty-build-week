@@ -13,8 +13,10 @@ import {
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const MAX_REQUEST_CHARS = 16_000;
-const RATE_WINDOW_MS = 10 * 60 * 1000;
-const RATE_LIMIT = 6;
+// Protect the entrant's small prepaid balance while still allowing a judge to
+// run the demo twice (for example, once in each language).
+const RATE_WINDOW_MS = 24 * 60 * 60 * 1000;
+const RATE_LIMIT = 2;
 const rateBuckets = new Map<string, { count: number; resetAt: number }>();
 
 const REPORT_SCHEMA = {
