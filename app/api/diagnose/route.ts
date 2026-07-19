@@ -277,13 +277,16 @@ export async function POST(request: Request) {
 
     const toolResponse = await createResponse(apiKey, {
       model: "gpt-5.6",
-      reasoning: { effort: "high" },
+      // This turn only has to preserve the submitted facts and emit the forced
+      // tool call. Low effort keeps the live demo responsive without reducing
+      // the depth of the report-writing turn below.
+      reasoning: { effort: "low" },
       input,
       tools: [tool],
       tool_choice: { type: "function", name: "calculate_stress_test" },
       parallel_tool_calls: false,
       store: false,
-      max_output_tokens: 3200,
+      max_output_tokens: 1600,
     });
 
     input.push(...((toolResponse.output ?? []) as Array<Record<string, unknown>>));
@@ -313,7 +316,10 @@ export async function POST(request: Request) {
 
     const reportResponse = await createResponse(apiKey, {
       model: "gpt-5.6",
-      reasoning: { effort: "high" },
+      // The deterministic engine already established numerical truth. Medium
+      // reasoning is the best latency/quality trade-off for the public demo;
+      // the strict schema and semantic audit still reject shallow answers.
+      reasoning: { effort: "medium" },
       instructions: buildMethodologyReportInstructions(languageInstruction),
       input,
       tools: [tool],
@@ -327,7 +333,7 @@ export async function POST(request: Request) {
         },
       },
       store: false,
-      max_output_tokens: 5200,
+      max_output_tokens: 3600,
     });
 
     const reportText = extractOutputText(reportResponse);
@@ -355,6 +361,7 @@ export async function POST(request: Request) {
             "forced_function_call",
             "deterministic_engine",
             "strict_structured_output",
+            "latency_balanced_reasoning",
             "methodology_semantic_audit",
             argumentIntegrity
               ? "argument_integrity_verified"
