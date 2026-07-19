@@ -261,7 +261,7 @@ export async function POST(request: Request) {
       type: "function",
       name: "calculate_stress_test",
       description:
-        "Run the authoritative deterministic cash-flow stress engine. Use the supplied facts and scenario values exactly; never calculate financial outputs yourself.",
+        "Run the authoritative deterministic cash-flow stress engine for a U.S. employer business, nonemployer/sole proprietor, or household. Use the supplied facts and scenario values exactly; never calculate financial outputs yourself.",
       parameters: RISK_CASE_JSON_SCHEMA,
       strict: true,
     };
@@ -273,7 +273,7 @@ export async function POST(request: Request) {
       },
       {
         role: "user",
-        content: `${languageInstruction}\nAnalyze this business and scenario. Context may be incomplete; surface uncertainty instead of silently filling gaps.\n${JSON.stringify(riskCase)}`,
+        content: `${languageInstruction}\nAnalyze this subject and scenario. Respect subjectType: do not use business language for a household or employer language for a nonemployer. Context may be incomplete; surface uncertainty instead of silently filling gaps.\n${JSON.stringify(riskCase)}`,
       },
     ];
 

@@ -4,14 +4,17 @@ import { useMemo, useState } from "react";
 import {
   calculateStressTest,
   DEFAULT_STRESS,
-  INDUSTRIES,
-  INDUSTRY_PRESETS,
+  PROFILE_PRESETS,
+  PROFILES_BY_SUBJECT,
+  REGIONS,
+  SIZE_BANDS_BY_SUBJECT,
   type BusinessInputs,
   type EngineResult,
-  type Industry,
   type LifelineKey,
   type Locale,
+  type Profile,
   type StressInputs,
+  type SubjectType,
 } from "@/lib/engine";
 
 type AIReport = {
@@ -63,17 +66,23 @@ type Audit = {
   reportResponseId: string | null;
 };
 
+type NumericSubjectKey =
+  | "monthlyRevenue" | "grossMargin" | "fixedCosts" | "cash"
+  | "receivables" | "receivableDays" | "inventory" | "shortDebt"
+  | "concentration" | "housingPayment" | "monthlyDebtPayments"
+  | "creditCardDebt" | "otherConsumerDebt" | "liquidInvestments";
+
 const copy = {
   zh: {
-    brand: "企业抗压诊断系统",
+    brand: "风险主权压力测试",
     nav: ["诊断", "填数", "坏天气", "求生指南", "AI 红队", "审计层"],
     eyebrow: "RISK SOVEREIGNTY · 风险主权",
     title: "最坏情况下，哪一条命先断？",
     subtitle:
-      "别人的 AI 算怎么赚最多。这里先算世界不配合你时，企业能撑多久、哪里先爆，以及怎样保留下一次选择。",
+      "不预测未来。主动模拟一个坏未来，找出企业、个体经营者或家庭最先爆开的结构，再提前加固并保留分段退出权。",
     realtime: "最坏口径 · 实时精算",
     sample: "载入样例",
-    unit: "金额单位：万元（或任意一致的 10k 本币单位）",
+    unit: "金额单位：千美元（USD $000s）；流量均按月，除非另有标注",
     runway: "最坏情况下 · 还能撑",
     months: "个月",
     plus: "+",
@@ -81,15 +90,19 @@ const copy = {
     pass: "通过",
     fail: "未通过",
     monthly: "压力后月现金流",
-    shock: "一次性冲击",
+    shock: "即时流动性冲击",
     buffer: "可动用缓冲",
     first: "最先爆点",
     lifelines: "五条命 · 最弱的先断",
-    businessTitle: "① 企业事实",
-    businessSub: "这些是你提供的事实。切换行业只会载入可修改的演示样例。",
+    businessTitle: "① 主体事实",
+    businessSub: "选择美国企业、无雇员个体经营者或个人家庭。模板只载入可修改的演示数字，不会替你预测。",
     weatherTitle: "② 坏天气",
     weatherSub: "把已经发生或你认为可能继续恶化的风险拨到预期档位。",
-    industry: "行业",
+    subject: "压力测试对象",
+    profile: "美国常见画像 / 行业",
+    sizeBand: "规模 / 家庭结构（仅作语境）",
+    region: "美国人口普查区域",
+    subjects: { business: "企业", self_employed: "个体经营 / 自由职业", household: "个人 / 家庭" },
     fields: {
       monthlyRevenue: "月营收",
       grossMargin: "毛利率",
@@ -100,6 +113,11 @@ const copy = {
       inventory: "库存账面值",
       shortDebt: "短期借款",
       concentration: "最大客户占比",
+      housingPayment: "月住房支出（租金 / 房贷）",
+      monthlyDebtPayments: "其他月债务还款",
+      creditCardDebt: "信用卡余额",
+      otherConsumerDebt: "房贷 / 车贷 / 学贷等余额",
+      liquidInvestments: "可变现储蓄与投资",
     },
     stresses: {
       revenueDrop: "营收下滑",
@@ -108,6 +126,11 @@ const copy = {
       customerLoss: "客户流失 / 停付",
       debtCall: "短贷被抽回",
       inventoryImpairment: "库存减值",
+      expenseIncrease: "必要生活成本上涨",
+      incomeInterruption: "收入完全中断",
+      emergencyExpense: "医疗 / 维修等意外支出",
+      debtPaymentIncrease: "月债务还款上升",
+      liquidAssetHaircut: "可变现资产折价",
     },
     guideTitle: "③ 分段求生指南 · 一点一点解开",
     guideSub: "每一步只撤一部分筹码，每一步都保留下一次选择的资格。",
@@ -122,8 +145,8 @@ const copy = {
     aiTitle: "④ GPT‑5.6 AI 红队",
     aiSub:
       "模型先被迫调用确定性压力测试工具，再用严格结构化输出给出因果链与分段行动。",
-    contextLabel: "补充企业语境（可选）",
-    contextPlaceholder: "例如：最大客户正在要求延长账期；设备可转卖但需要 45 天；房租还有 8 个月到期……",
+    contextLabel: "补充真实约束（可选）",
+    contextPlaceholder: "例如：合同解约需要 45 天；主要收入来自一份工作；车辆是接单必需资产；房贷利率将在六个月后重置……",
     generate: "用 GPT‑5.6 生成加固报告",
     generating: "GPT‑5.6 正在调用压力测试工具…",
     waiting: "先让确定性引擎算清楚，再让 AI 挑战你的假设。",
@@ -144,7 +167,7 @@ const copy = {
     auditTitle: "⑤ 可审计边界",
     auditSub: "把事实、假设、计算与 AI 判断分开，避免漂亮答案制造虚假确定性。",
     auditLayers: [
-      ["INPUT", "企业事实", "只来自用户输入；AI 不得改写"],
+      ["INPUT", "主体事实", "只来自用户输入；AI 不得改写"],
       ["ASSUMPTION", "压力假设", "所有坏天气参数可见、可调"],
       ["CALC", "数值真相", "确定性公式计算现金流、冲击和跑道"],
       ["AI", "判断与解释", "GPT‑5.6 只解释、挑战并设计阶段动作"],
@@ -153,15 +176,15 @@ const copy = {
     disclaimer: "决策支持工具，不构成会计、法律、信贷或投资建议。",
   },
   en: {
-    brand: "Business Stress Test",
+    brand: "Risk Sovereignty Stress Test",
     nav: ["Diagnosis", "Inputs", "Storm", "Survival", "AI Red Team", "Audit"],
     eyebrow: "RISK SOVEREIGNTY",
     title: "What breaks first when the world stops cooperating?",
     subtitle:
-      "Most AI tells you how to grow. This one finds the first failure point, the time left, and the staged exit that preserves your next move.",
+      "It does not predict the future. It simulates a bad one, finds what breaks first, and helps a business, independent worker, or household reinforce that weak point without losing the right to exit in stages.",
     realtime: "Worst-case lens · live calculation",
     sample: "Load sample",
-    unit: "Money unit: any consistent 10k local-currency unit",
+    unit: "Money unit: USD thousands ($000s); flows are monthly unless labeled otherwise",
     runway: "Worst-case survival runway",
     months: "months",
     plus: "+",
@@ -169,25 +192,34 @@ const copy = {
     pass: "Pass",
     fail: "Fail",
     monthly: "Stressed monthly cash flow",
-    shock: "One-time shock",
+    shock: "Immediate liquidity shock",
     buffer: "Available buffer",
     first: "First failure point",
     lifelines: "Five lifelines · the weakest breaks first",
-    businessTitle: "① Business facts",
-    businessSub: "Facts come from you. Industry switches only load editable demo values.",
+    businessTitle: "① Subject facts",
+    businessSub: "Choose a U.S. employer business, nonemployer/sole proprietor, or household. Presets only load editable demo values; they never predict your future.",
     weatherTitle: "② Bad weather",
     weatherSub: "Set the risks already happening—or likely to get worse—to your expected level.",
-    industry: "Industry",
+    subject: "Stress-test subject",
+    profile: "Common U.S. profile / sector",
+    sizeBand: "Size / household structure (context only)",
+    region: "U.S. Census region",
+    subjects: { business: "Employer business", self_employed: "Independent / sole proprietor", household: "Individual / household" },
     fields: {
-      monthlyRevenue: "Monthly revenue",
-      grossMargin: "Gross margin",
-      fixedCosts: "Monthly fixed costs",
-      cash: "Cash buffer",
-      receivables: "Receivables",
+      monthlyRevenue: "Monthly net sales / take-home income",
+      grossMargin: "Gross margin after COGS",
+      fixedCosts: "Fixed cash commitments / essentials",
+      cash: "Unrestricted cash",
+      receivables: "Net accounts receivable",
       receivableDays: "Current DSO",
       inventory: "Inventory book value",
-      shortDebt: "Short-term debt",
-      concentration: "Largest customer share",
+      shortDebt: "Debt due within 12 months",
+      concentration: "Largest customer / primary income share",
+      housingPayment: "Monthly rent / mortgage",
+      monthlyDebtPayments: "Other monthly debt payments",
+      creditCardDebt: "Credit card balance",
+      otherConsumerDebt: "Mortgage / auto / student / other debt",
+      liquidInvestments: "Accessible savings & investments",
     },
     stresses: {
       revenueDrop: "Revenue drop",
@@ -196,6 +228,11 @@ const copy = {
       customerLoss: "Customer loss / non-payment",
       debtCall: "Short debt called",
       inventoryImpairment: "Inventory impairment",
+      expenseIncrease: "Essential-cost increase",
+      incomeInterruption: "Full income interruption",
+      emergencyExpense: "Medical / repair emergency",
+      debtPaymentIncrease: "Debt-payment increase",
+      liquidAssetHaircut: "Liquid-asset haircut",
     },
     guideTitle: "③ Staged survival guide",
     guideSub: "Remove risk in pieces. Every move should preserve another choice.",
@@ -210,8 +247,8 @@ const copy = {
     aiTitle: "④ GPT‑5.6 AI red team",
     aiSub:
       "The model must call the deterministic stress-test tool first, then return a strict causal chain and staged actions.",
-    contextLabel: "Business context (optional)",
-    contextPlaceholder: "Example: our largest customer wants 30 more payment days; equipment can be sold but needs 45 days; lease expires in eight months…",
+    contextLabel: "Real-world constraints (optional)",
+    contextPlaceholder: "Example: contract exit needs 45 days; one job supplies most income; the car is required for gig work; mortgage rate resets in six months…",
     generate: "Generate GPT‑5.6 survival report",
     generating: "GPT‑5.6 is calling the stress-test tool…",
     waiting: "Let the engine establish numerical truth, then let AI challenge the assumptions.",
@@ -232,7 +269,7 @@ const copy = {
     auditTitle: "⑤ Auditable boundary",
     auditSub: "Facts, assumptions, calculations, and AI judgment remain visibly separate.",
     auditLayers: [
-      ["INPUT", "Business facts", "Only user-supplied; AI cannot rewrite them"],
+      ["INPUT", "Subject facts", "Only user-supplied; AI cannot rewrite them"],
       ["ASSUMPTION", "Stress assumptions", "Every scenario parameter is visible and editable"],
       ["CALC", "Numerical truth", "Deterministic formulas compute cash flow, shocks, and runway"],
       ["AI", "Judgment and explanation", "GPT‑5.6 challenges assumptions and designs staged actions"],
@@ -242,14 +279,30 @@ const copy = {
   },
 } as const;
 
-const industryNames: Record<Industry, { zh: string; en: string }> = {
-  Manufacturing: { zh: "制造 / 代工", en: "Manufacturing" },
-  "Food & Beverage": { zh: "餐饮 / 门店", en: "Food & Beverage" },
-  Retail: { zh: "零售", en: "Retail" },
-  Construction: { zh: "工程 / 建筑", en: "Construction" },
-  "Cross-border E-commerce": { zh: "跨境电商", en: "Cross-border E-commerce" },
-  "Professional Services": { zh: "专业服务", en: "Professional Services" },
-  Technology: { zh: "互联网 / 科技", en: "Technology" },
+const profileNames: Record<Profile, { zh: string; en: string }> = {
+  "Retail Trade": { zh: "零售业", en: "Retail Trade" },
+  "Professional Services": { zh: "专业、科学与技术服务", en: "Professional Services" },
+  "Health Care & Social Assistance": { zh: "医疗与社会援助", en: "Health Care & Social Assistance" },
+  "Other Services": { zh: "其他个人与维修服务", en: "Other Services" },
+  Construction: { zh: "建筑业", en: "Construction" },
+  "Accommodation & Food Services": { zh: "住宿与餐饮", en: "Accommodation & Food Services" },
+  Manufacturing: { zh: "制造业", en: "Manufacturing" },
+  "Transportation & Warehousing": { zh: "运输与仓储", en: "Transportation & Warehousing" },
+  "Professional / Freelance": { zh: "专业服务 / 自由职业", en: "Professional / Freelance" },
+  "Personal Care & Services": { zh: "个人护理与服务", en: "Personal Care & Services" },
+  "Construction Trades": { zh: "建筑工种", en: "Construction Trades" },
+  "Transportation / Gig": { zh: "运输 / 平台接单", en: "Transportation / Gig" },
+  "Retail / E-commerce": { zh: "零售 / 电商", en: "Retail / E-commerce" },
+  "Real Estate Services": { zh: "房地产服务", en: "Real Estate Services" },
+  "Arts / Media": { zh: "艺术 / 媒体", en: "Arts / Media" },
+  "Home Services": { zh: "家居服务", en: "Home Services" },
+  "Early-career Renter": { zh: "职场初期租房者", en: "Early-career Renter" },
+  "Single-income Household": { zh: "单收入家庭", en: "Single-income Household" },
+  "Dual-income Family": { zh: "双收入有孩家庭", en: "Dual-income Family" },
+  "Homeowner with Mortgage": { zh: "有房贷家庭", en: "Homeowner with Mortgage" },
+  "Wage + Gig Household": { zh: "工资 + 零工家庭", en: "Wage + Gig Household" },
+  "Student-loan Household": { zh: "学生贷款家庭", en: "Student-loan Household" },
+  "Near-retirement Household": { zh: "临近退休家庭", en: "Near-retirement Household" },
 };
 
 const lifelineNames: Record<LifelineKey, { zh: string; en: string }> = {
@@ -258,6 +311,14 @@ const lifelineNames: Record<LifelineKey, { zh: string; en: string }> = {
   collection: { zh: "回款", en: "Collection" },
   leverage: { zh: "杠杆", en: "Leverage" },
   concentration: { zh: "集中度", en: "Concentration" },
+};
+
+const householdLifelineNames: Record<LifelineKey, { zh: string; en: string }> = {
+  cash: { zh: "流动缓冲", en: "Liquid buffer" },
+  margin: { zh: "收入韧性", en: "Income resilience" },
+  collection: { zh: "住房负担", en: "Housing burden" },
+  leverage: { zh: "偿债负担", en: "Debt service" },
+  concentration: { zh: "收入集中度", en: "Income concentration" },
 };
 
 const stageIndex = { signal: 0, trend: 1, contagion: 2, emergency: 3 } as const;
@@ -270,7 +331,8 @@ const exitStatusCopy = {
 
 function localFallback(engine: EngineResult, locale: Locale): AIReport {
   const zh = locale === "zh";
-  const failure = lifelineNames[engine.firstFailure][locale];
+  const names = engine.subjectType === "household" ? householdLifelineNames : lifelineNames;
+  const failure = names[engine.firstFailure][locale];
   return {
     summary: zh
       ? `先别扩张。当前最弱的是${failure}，先把现金跑道和退出权保住。`
@@ -280,8 +342,8 @@ function localFallback(engine: EngineResult, locale: Locale): AIReport {
       first_failure: failure,
       runway: `${engine.runwayMonths}${engine.runwayCapped ? "+" : ""} ${zh ? "个月" : "months"}`,
       why: zh
-        ? `一次性冲击会吞掉 ${engine.oneTimeShock} 个金额单位，压力后月现金流为 ${engine.stressedNetCashFlow}。`
-        : `The one-time shock consumes ${engine.oneTimeShock} units and stressed monthly cash flow is ${engine.stressedNetCashFlow}.`,
+        ? `即时流动性冲击会吞掉 ${engine.liquidityShock} 千美元，压力后月现金流为 ${engine.stressedNetCashFlow} 千美元。`
+        : `The immediate liquidity shock consumes $${engine.liquidityShock}k and stressed monthly cash flow is $${engine.stressedNetCashFlow}k.`,
     },
     sovereignty_gate: {
       exit_right_status: "conditional",
@@ -289,8 +351,8 @@ function localFallback(engine: EngineResult, locale: Locale): AIReport {
         ? "当前输入没有给出资产变现时间、解约条款与对手方承诺，退路只能视为有条件存在。"
         : "The inputs do not establish liquidation time, cancellation terms, or counterparty commitment, so the exit remains conditional.",
       maximum_tolerable_loss: zh
-        ? `引擎算出一次性冲击为 ${engine.oneTimeShock}，但老板个人能承受的最大损失尚未填写，二者不能混为一谈。`
-        : `The engine calculates a ${engine.oneTimeShock}-unit shock, but the owner's maximum tolerable loss is unspecified; the two are not interchangeable.`,
+        ? `引擎算出即时流动性冲击为 ${engine.liquidityShock} 千美元，但决策者能承受的最大损失尚未填写，二者不能混为一谈。`
+        : `The engine calculates a $${engine.liquidityShock}k liquidity shock, but the decision-maker's maximum tolerable loss is unspecified; the two are not interchangeable.`,
       reentry_condition: zh
         ? "压力后月现金流转正，且现金跑道稳定回到十二个月以上。"
         : "Stressed monthly cash flow turns positive and runway remains above twelve months.",
@@ -312,7 +374,7 @@ function localFallback(engine: EngineResult, locale: Locale): AIReport {
         order: 2,
         event: zh ? "回款冻结与抽贷叠加" : "Collection freeze and debt call stack",
         consequence: zh ? "现金缓冲被一次性削薄" : "The cash buffer is cut immediately",
-        evidence_id: "one_time_shock",
+        evidence_id: "liquidity_shock",
       },
       {
         order: 3,
@@ -325,22 +387,28 @@ function localFallback(engine: EngineResult, locale: Locale): AIReport {
       {
         phase: "stop_bleeding",
         trigger: zh ? "压力后月现金流转负" : "Stressed monthly cash flow turns negative",
-        action: zh ? "暂停新增固定成本，把采购与投放先降一档。" : "Freeze new fixed costs and step down procurement and acquisition spend.",
+        action: engine.subjectType === "household"
+          ? (zh ? "冻结新增分期与可选支出，先保住房、医疗、通勤和最低还款。" : "Freeze new installment purchases and optional spending; protect housing, health, transport, and minimum payments first.")
+          : (zh ? "暂停新增固定成本，把采购与投放先降一档。" : "Freeze new fixed costs and step down procurement and acquisition spend."),
         cash_cost: zh ? "低" : "Low",
         reversibility: "high",
-        partial_exit: zh ? "先撤新增部分，不动核心业务。" : "Remove only the newest commitments; keep the core operating.",
+        partial_exit: engine.subjectType === "household"
+          ? (zh ? "先撤可逆的新增承诺，不动维持收入的核心资产。" : "Remove the newest reversible commitments without sacrificing assets required to earn income.")
+          : (zh ? "先撤新增部分，不动核心业务。" : "Remove only the newest commitments; keep the core operating."),
         preserved_option: zh ? "保留三个月后的重新配置权。" : "Preserves the right to reconfigure in three months.",
         evidence_ids: ["monthly_cash_flow"],
       },
       {
         phase: "preserve_exit",
-        trigger: zh ? "可动用缓冲低于六个月刚性支出" : "Available buffer falls below six months of fixed costs",
-        action: zh ? "把租约、采购和借款改成可分段、可提前退出的结构。" : "Renegotiate leases, purchasing, and debt into staged, cancellable commitments.",
+        trigger: zh ? "可动用缓冲低于六个月压力缺口" : "Available buffer falls below six months of stressed shortfall",
+        action: engine.subjectType === "household"
+          ? (zh ? "逐项核对住房与债务条款，优先争取可验证、不会制造更大总成本的缓冲。" : "Review housing and debt terms one by one; seek verifiable relief that does not create a larger total-cost trap.")
+          : (zh ? "把租约、采购和借款改成可分段、可提前退出的结构。" : "Renegotiate leases, purchasing, and debt into staged, cancellable commitments."),
         cash_cost: zh ? "中" : "Medium",
         reversibility: "medium",
         partial_exit: zh ? "每次只处理一项敞口。" : "Exit one exposure at a time.",
         preserved_option: zh ? "避免整个系统一起陪葬。" : "Avoids an all-or-nothing failure.",
-        evidence_ids: ["one_time_shock", "cash_only_buffer"],
+        evidence_ids: ["liquidity_shock", engine.subjectType === "household" ? "household_scope" : "cash_only_buffer"],
       },
       {
         phase: "rebuild_optionality",
@@ -367,7 +435,7 @@ function localFallback(engine: EngineResult, locale: Locale): AIReport {
 
 export default function RiskSovereigntyApp() {
   const [locale, setLocale] = useState<Locale>("en");
-  const [business, setBusiness] = useState<BusinessInputs>({ ...INDUSTRY_PRESETS.Manufacturing });
+  const [business, setBusiness] = useState<BusinessInputs>({ ...PROFILE_PRESETS.Manufacturing });
   const [stress, setStress] = useState<StressInputs>({ ...DEFAULT_STRESS });
   const [context, setContext] = useState("");
   const [report, setReport] = useState<AIReport | null>(null);
@@ -396,11 +464,15 @@ export default function RiskSovereigntyApp() {
     setAudit(null);
   }
 
-  function chooseIndustry(industry: Industry) {
-    setBusiness({ ...INDUSTRY_PRESETS[industry] });
+  function chooseProfile(profile: Profile) {
+    setBusiness({ ...PROFILE_PRESETS[profile] });
     setStress({ ...DEFAULT_STRESS });
     setReport(null);
     setAudit(null);
+  }
+
+  function chooseSubject(subjectType: SubjectType) {
+    chooseProfile(PROFILES_BY_SUBJECT[subjectType][0]);
   }
 
   function switchLocale() {
@@ -443,36 +515,67 @@ export default function RiskSovereigntyApp() {
     }
   }
 
+  const operatingFields: NumericSubjectKey[] = [
+    "monthlyRevenue", "grossMargin", "fixedCosts", "cash", "receivables",
+    "receivableDays", "inventory", "shortDebt", "concentration",
+  ];
+  const householdFields: NumericSubjectKey[] = [
+    "monthlyRevenue", "fixedCosts", "housingPayment", "monthlyDebtPayments",
+    "cash", "liquidInvestments", "creditCardDebt", "otherConsumerDebt", "concentration",
+  ];
+  const fieldKeys = business.subjectType === "household" ? householdFields : operatingFields;
   const fieldConfig: Array<{
-    key: Exclude<keyof BusinessInputs, "industry">;
+    key: NumericSubjectKey;
     min: number;
     max: number;
     step: number;
     suffix: string;
-  }> = [
-    { key: "monthlyRevenue", min: 0, max: 100000, step: 1, suffix: "" },
-    { key: "grossMargin", min: 0, max: 100, step: 1, suffix: "%" },
-    { key: "fixedCosts", min: 0, max: 100000, step: 1, suffix: "" },
-    { key: "cash", min: 0, max: 1000000, step: 1, suffix: "" },
-    { key: "receivables", min: 0, max: 1000000, step: 1, suffix: "" },
-    { key: "receivableDays", min: 0, max: 720, step: 1, suffix: locale === "zh" ? "天" : "d" },
-    { key: "inventory", min: 0, max: 1000000, step: 1, suffix: "" },
-    { key: "shortDebt", min: 0, max: 1000000, step: 1, suffix: "" },
-    { key: "concentration", min: 0, max: 100, step: 1, suffix: "%" },
-  ];
+  }> = fieldKeys.map((key) => ({
+    key,
+    min: 0,
+    max: key === "grossMargin" || key === "concentration" ? 100 : key === "receivableDays" ? 720 : 1000000,
+    step: key === "grossMargin" || key === "concentration" || key === "receivableDays" ? 1 : 0.1,
+    suffix: key === "grossMargin" || key === "concentration" ? "%" : key === "receivableDays" ? (locale === "zh" ? "天" : "d") : "",
+  }));
 
+  const householdFieldLabels: Partial<Record<NumericSubjectKey, { zh: string; en: string }>> = {
+    monthlyRevenue: { zh: "月税后家庭收入", en: "Monthly take-home income" },
+    fixedCosts: { zh: "月必要生活支出（不含住房与债务）", en: "Essential monthly spending (ex housing/debt)" },
+    cash: { zh: "银行现金与活期储蓄", en: "Bank cash & on-demand savings" },
+    concentration: { zh: "主要收入来源占比", en: "Primary income-source share" },
+  };
+  const fieldLabel = (key: NumericSubjectKey) =>
+    business.subjectType === "household" && householdFieldLabels[key]
+      ? householdFieldLabels[key]![locale]
+      : t.fields[key];
+
+  const operatingStress: Array<keyof StressInputs> = ["revenueDrop", "marginDrop", "paymentDelay", "customerLoss", "debtCall", "inventoryImpairment"];
+  const householdStress: Array<keyof StressInputs> = ["revenueDrop", "incomeInterruption", "expenseIncrease", "emergencyExpense", "debtPaymentIncrease", "debtCall", "liquidAssetHaircut"];
+  const stressKeys = business.subjectType === "household" ? householdStress : operatingStress;
   const stressConfig: Array<{
     key: keyof StressInputs;
     max: number;
     suffix: string;
-  }> = [
-    { key: "revenueDrop", max: 80, suffix: "%" },
-    { key: "marginDrop", max: 40, suffix: locale === "zh" ? " 个点" : " pts" },
-    { key: "paymentDelay", max: 180, suffix: locale === "zh" ? " 天" : " days" },
-    { key: "customerLoss", max: 80, suffix: "%" },
-    { key: "debtCall", max: 100, suffix: "%" },
-    { key: "inventoryImpairment", max: 100, suffix: "%" },
-  ];
+  }> = stressKeys.map((key) => ({
+    key,
+    max: key === "paymentDelay" ? 180 : key === "marginDrop" ? 40 : key === "incomeInterruption" ? 12 : key === "emergencyExpense" ? 50 : key === "debtPaymentIncrease" ? 100 : 100,
+    suffix: key === "paymentDelay" ? (locale === "zh" ? " 天" : " days") : key === "marginDrop" ? (locale === "zh" ? " 个点" : " pts") : key === "incomeInterruption" ? (locale === "zh" ? " 个月" : " months") : key === "emergencyExpense" ? "k" : "%",
+  }));
+  const stageActions = business.subjectType === "household"
+    ? (locale === "zh"
+        ? [
+            ["冻结新增分期与可选支出", "每周跟踪现金缺口"],
+            ["保住房、医疗、通勤和最低还款", "逐项核对可逆的合同与债务条款"],
+            ["隔离高成本债务与非必要资产", "不要牺牲维持收入的核心工具"],
+            ["保护现金、住所和基本保障", "停止用新债长期填补结构性缺口"],
+          ]
+        : [
+            ["Freeze new installments and optional spend", "Track the cash shortfall weekly"],
+            ["Protect housing, health, transport, and minimum payments", "Review reversible contracts and debt terms one by one"],
+            ["Ring-fence high-cost debt and nonessential assets", "Do not sacrifice tools required to earn income"],
+            ["Protect cash, shelter, and basic coverage", "Stop using new debt to hide a structural shortfall"],
+          ])
+    : t.stageActions;
 
   return (
     <main className="app-shell">
@@ -502,7 +605,7 @@ export default function RiskSovereigntyApp() {
           <p>{t.subtitle}</p>
         </div>
         <div className="heading-actions">
-          <button className="ghost-button" onClick={() => chooseIndustry("Manufacturing")}>{t.sample}</button>
+          <button className="ghost-button" onClick={() => chooseProfile(PROFILES_BY_SUBJECT[business.subjectType][0])}>{t.sample}</button>
           <span className="live-pill"><i />{t.realtime}</span>
         </div>
       </header>
@@ -525,18 +628,18 @@ export default function RiskSovereigntyApp() {
           <div className="runway-ticks"><span>0</span><span>6</span><span>12</span><span>24+</span></div>
           <div className="metric-grid">
             <div><span>{t.monthly}</span><b className={engine.stressedNetCashFlow >= 0 ? "positive" : "negative"}>{engine.stressedNetCashFlow >= 0 ? "+" : ""}{engine.stressedNetCashFlow}</b></div>
-            <div><span>{t.shock}</span><b className="negative">−{engine.oneTimeShock}</b></div>
+            <div><span>{t.shock}</span><b className="negative">−{engine.liquidityShock}</b></div>
             <div><span>{t.buffer}</span><b className={engine.availableBuffer >= 0 ? "warning" : "negative"}>{engine.availableBuffer}</b></div>
             <div><span>{t.six}</span><b className={engine.sixMonthPass ? "positive" : "negative"}>{engine.sixMonthPass ? t.pass : t.fail}</b></div>
           </div>
         </article>
 
         <aside className="glass-card lifeline-card">
-          <div className="section-title"><h2>{t.lifelines}</h2><span>{lifelineNames[engine.firstFailure][locale]}</span></div>
+          <div className="section-title"><h2>{t.lifelines}</h2><span>{(engine.subjectType === "household" ? householdLifelineNames : lifelineNames)[engine.firstFailure][locale]}</span></div>
           <div className="lifeline-list">
             {engine.lifelines.map((life) => (
               <div className={`lifeline ${life.key === engine.firstFailure ? "weak" : ""}`} key={life.key}>
-                <span>{lifelineNames[life.key][locale]}</span>
+                <span>{(engine.subjectType === "household" ? householdLifelineNames : lifelineNames)[life.key][locale]}</span>
                 <div><i style={{ width: `${Math.max(3, life.score)}%` }} /></div>
                 <b>{life.score.toFixed(0)}</b>
               </div>
@@ -544,7 +647,7 @@ export default function RiskSovereigntyApp() {
           </div>
           <div className="failure-callout">
             <span>{t.first}</span>
-            <strong>{lifelineNames[engine.firstFailure][locale]}</strong>
+            <strong>{(engine.subjectType === "household" ? householdLifelineNames : lifelineNames)[engine.firstFailure][locale]}</strong>
             <p>{locale === "zh" ? "不是最吓人的风险先发生，而是最薄弱的结构先失去选择。" : "The scariest risk is not always first. The weakest structure loses optionality first."}</p>
           </div>
           <div className="truth-strip"><span>ENGINE</span><b>Deterministic numerical truth</b></div>
@@ -556,18 +659,40 @@ export default function RiskSovereigntyApp() {
       <section className="control-grid">
         <article className="glass-card control-card" id="inputs">
           <div className="section-title stacked"><h2>{t.businessTitle}</h2><p>{t.businessSub}</p></div>
-          <label className="field-label">{t.industry}</label>
+          <label className="field-label">{t.subject}</label>
           <div className="industry-chips">
-            {INDUSTRIES.map((industry) => (
-              <button key={industry} className={business.industry === industry ? "selected" : ""} onClick={() => chooseIndustry(industry)}>
-                {industryNames[industry][locale]}
+            {(Object.keys(t.subjects) as SubjectType[]).map((subject) => (
+              <button key={subject} className={business.subjectType === subject ? "selected" : ""} onClick={() => chooseSubject(subject)}>
+                {t.subjects[subject]}
+              </button>
+            ))}
+          </div>
+          <label className="field-label">{t.profile}</label>
+          <div className="industry-chips">
+            {PROFILES_BY_SUBJECT[business.subjectType].map((profile) => (
+              <button key={profile} className={business.profile === profile ? "selected" : ""} onClick={() => chooseProfile(profile)}>
+                {profileNames[profile][locale]}
               </button>
             ))}
           </div>
           <div className="input-grid">
+            <label className="number-field">
+              <span>{t.sizeBand}</span>
+              <select value={business.sizeBand} onChange={(event) => updateBusiness("sizeBand", event.target.value as BusinessInputs["sizeBand"])}>
+                {SIZE_BANDS_BY_SUBJECT[business.subjectType].map((size) => <option key={size}>{size}</option>)}
+              </select>
+            </label>
+            <label className="number-field">
+              <span>{t.region}</span>
+              <select value={business.region} onChange={(event) => updateBusiness("region", event.target.value as BusinessInputs["region"])}>
+                {REGIONS.map((region) => <option key={region}>{region}</option>)}
+              </select>
+            </label>
+          </div>
+          <div className="input-grid">
             {fieldConfig.map(({ key, min, max, step, suffix }) => (
               <label className="number-field" key={key}>
-                <span>{t.fields[key]}</span>
+                <span>{fieldLabel(key)}</span>
                 <div>
                   <input
                     type="number"
@@ -589,7 +714,7 @@ export default function RiskSovereigntyApp() {
           <div className="stress-list">
             {stressConfig.map(({ key, max, suffix }) => (
               <label className="stress-row" key={key}>
-                <span><b>{t.stresses[key]}</b><em>{stress[key]}{suffix}</em></span>
+                <span><b>{key === "revenueDrop" && business.subjectType === "household" ? (locale === "zh" ? "月收入下降" : "Take-home income drop") : key === "debtCall" && business.subjectType === "household" ? (locale === "zh" ? "债务余额提前到期 / 催收" : "Consumer debt accelerated") : t.stresses[key]}</b><em>{stress[key]}{suffix}</em></span>
                 <input
                   type="range"
                   min="0"
@@ -614,7 +739,7 @@ export default function RiskSovereigntyApp() {
           {t.stages.map((name, index) => (
             <article key={name} className={`${index === currentStage ? "current" : ""} ${index < currentStage ? "past" : ""}`}>
               <div><span>0{index + 1}</span><h3>{name}</h3>{index === currentStage && <em>{t.here}</em>}</div>
-              {t.stageActions[index].map((action) => <p key={action}>{action}</p>)}
+              {stageActions[index].map((action) => <p key={action}>{action}</p>)}
             </article>
           ))}
         </div>

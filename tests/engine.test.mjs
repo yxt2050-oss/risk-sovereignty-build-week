@@ -4,6 +4,7 @@ import {
   calculateStressTest,
   DEFAULT_STRESS,
   INDUSTRY_PRESETS,
+  PROFILE_PRESETS,
   normalizeRiskCase,
 } from "../lib/engine.ts";
 
@@ -48,7 +49,7 @@ test("normalization clamps adversarial numeric input", () => {
   assert.equal(normalized.business.grossMargin, 100);
   assert.equal(normalized.business.cash, 0);
   assert.equal(normalized.business.concentration, 0);
-  assert.equal(normalized.stress.revenueDrop, 95);
+  assert.equal(normalized.stress.revenueDrop, 100);
   assert.equal(normalized.stress.paymentDelay, 0);
 });
 
@@ -56,8 +57,33 @@ test("engine exposes evidence and correctly labels collection days", () => {
   const result = calculateStressTest({ ...baseCase, stress: DEFAULT_STRESS });
   assert.deepEqual(
     result.calculationTrace.map(({ id }) => id),
-    ["stressed_revenue", "monthly_cash_flow", "one_time_shock", "survival_runway"],
+    ["stressed_revenue", "monthly_cash_flow", "liquidity_shock", "asset_impairment", "survival_runway"],
   );
   assert.equal(result.lifelines.find(({ key }) => key === "collection")?.unit, "days");
   assert.ok(result.lifelines.some(({ key }) => key === result.firstFailure));
+});
+
+test("inventory impairment is economic damage, not an invented cash outflow", () => {
+  const calm = calculateStressTest(baseCase);
+  const impaired = calculateStressTest({
+    ...baseCase,
+    stress: { ...baseCase.stress, inventoryImpairment: 100 },
+  });
+  assert.equal(impaired.availableBuffer, calm.availableBuffer);
+  assert.ok(impaired.oneTimeShock > calm.oneTimeShock);
+});
+
+test("household mode translates job, housing, debt, and emergency stress into runway", () => {
+  const householdCase = {
+    locale: "en",
+    context: "one income supports the household",
+    business: PROFILE_PRESETS["Single-income Household"],
+    stress: DEFAULT_STRESS,
+  };
+  const result = calculateStressTest(householdCase);
+  assert.equal(result.subjectType, "household");
+  assert.ok(result.calculationTrace.some(({ id }) => id === "stressed_income"));
+  assert.ok(result.calculationTrace.some(({ id }) => id === "liquidity_shock"));
+  assert.ok(result.lifelines.find(({ key }) => key === "collection")?.unit === "%");
+  assert.ok(result.runwayMonths >= 0);
 });

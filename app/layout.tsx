@@ -13,12 +13,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Risk Sovereignty | AI Stress Test for Small Businesses",
+  title: "Risk Sovereignty | AI Stress Test for Businesses & Households",
   description:
-    "A GPT-5.6 AI red team that finds the first financial failure point and builds a staged survival plan that preserves the owner's next move.",
+    "A GPT-5.6 AI red team that simulates a bad future, finds the first financial failure point, and preserves the right to exit in stages.",
   applicationName: "Risk Sovereignty",
   keywords: [
     "small business",
+    "household stress test",
+    "sole proprietor",
     "cash flow stress test",
     "risk sovereignty",
     "GPT-5.6",
@@ -60,7 +62,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN">
+    <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         {children}
       </body>

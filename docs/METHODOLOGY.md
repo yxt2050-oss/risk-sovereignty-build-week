@@ -1,12 +1,12 @@
 # Risk Sovereignty Method
 
-Risk Sovereignty is not a generic finance persona added to a language model. It is a founder-developed decision method translated from years of trading, operating experience, and repeated adversarial discussion into a business diagnostic workflow.
+Risk Sovereignty is not a generic finance persona added to a language model. It is a founder-developed decision method translated from years of trading, operating experience, and repeated adversarial discussion into a diagnostic workflow for businesses, independent workers, and households.
 
 The private source conversations are not published in this repository. This document records the operational method used by the product without exposing that personal archive.
 
 ## The thesis
 
-Most optimization tools ask how to maximize the best forecast. Risk Sovereignty asks how to retain agency when the forecast is wrong.
+Most optimization tools ask how to maximize the best forecast. Risk Sovereignty refuses to pretend the forecast is knowable. It constructs a visible bad future and asks which structural point fails first. That point is the **first failure point**: the vulnerability to strengthen before reality chooses the scenario for you.
 
 > 别人的 AI 帮你算怎么赚最多，我们的 AI 帮你算最坏情况下怎么先活下来。
 >
@@ -18,6 +18,8 @@ Survival is not the final objective. It is the prerequisite for continued partic
 2. **Preserve the upside:** once loss is affordable and exit is credible, participate, learn, and scale in stages.
 
 This is why the method is neither conventional growth optimization nor risk avoidance.
+
+The core promise is not “we know what the future will do.” It is: **whatever the future does, no single plausible shock should be able to kill the whole system or lock it into an exitless structure.** A resilient system can contain damage, stop bleeding in stages, remove one exposure without overturning the whole table, and preserve the resources needed to choose again.
 
 ## The operational sequence
 
@@ -39,11 +41,11 @@ If those conditions are unknown, the exit is conditional, not verified.
 
 ### 3. State the maximum tolerable loss
 
-Calculated damage and owner tolerance are different facts. The engine can calculate cash impact; it cannot invent how much loss the owner, family, employees, or creditors can bear. When that boundary is missing, the AI must say so.
+Calculated damage and personal tolerance are different facts. The engine can calculate cash impact; it cannot invent how much loss the decision-maker, family, employees, or creditors can bear. When that boundary is missing, the AI must say so.
 
 ### 4. Decompose instead of panic
 
-The key distinction is not merely whether a business can eventually close. It is **decomposability**:
+The key distinction is not merely whether a company, livelihood, or household plan can eventually be abandoned. It is **decomposability**:
 
 > When one link fails, can the owner remove only that part, or must the entire system fail with it?
 
@@ -94,7 +96,7 @@ The implementation gives each layer a different owner:
 
 | Layer | Owner | Method rule |
 | --- | --- | --- |
-| Business facts | User | The model cannot silently rewrite them |
+| Subject facts | User | The model cannot silently rewrite them |
 | Stress assumptions | User | Visible, editable, and challengeable |
 | Numerical truth | Deterministic engine | Formula-based outputs and evidence IDs |
 | Sovereignty gate | GPT-5.6 + schema | Exit reality, tolerable loss, re-entry, upside, decision quality |
@@ -105,7 +107,7 @@ The prompt, JSON Schema, UI, and post-generation semantic audit all encode this 
 
 ## Voice and restraint
 
-The founder's philosophical language gives the method its origin and direction, but customer-facing diagnosis stays restrained. It does not call an owner strong or weak, moralize debt, promise survival, flatter the user, or replace qualified accounting, legal, lending, or investment advice.
+The founder's philosophical language gives the method its origin and direction, but customer-facing diagnosis stays restrained. It does not call a decision-maker strong or weak, moralize debt, promise survival, flatter the user, or replace qualified accounting, tax, legal, lending, credit, bankruptcy, benefits, or investment advice.
 
 Its simplest promise is narrower:
 

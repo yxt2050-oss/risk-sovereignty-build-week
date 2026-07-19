@@ -651,7 +651,8 @@ a {
   gap: 5px;
 }
 
-.number-field input {
+.number-field input,
+.number-field select {
   width: 86px;
   padding: 7px 8px;
   border: 1px solid rgba(139, 110, 255, 0.23);
@@ -664,7 +665,14 @@ a {
   text-align: right;
 }
 
+.number-field select {
+  width: 190px;
+  color-scheme: dark;
+  text-align: left;
+}
+
 .number-field input:focus,
+.number-field select:focus,
 .context-field textarea:focus {
   border-color: rgba(44, 230, 162, 0.58);
   box-shadow: 0 0 15px rgba(44, 230, 162, 0.14);

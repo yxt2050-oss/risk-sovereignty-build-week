@@ -1,10 +1,16 @@
 # Risk Sovereignty
 
-**An AI red team for small businesses that finds the first financial failure point and builds a staged survival plan that preserves the owner's next move.**
+**An AI red team for U.S. businesses, independent workers, and households that simulates a bad future, finds the first structural failure point, and preserves the right to exit in stages.**
 
 ![Risk Sovereignty social card](public/risk-sovereignty-social.png)
 
-Most business software optimizes for growth. Risk Sovereignty starts with a different question: _if the world stops cooperating, what breaks first?_ The app turns editable business facts and visible stress assumptions into a deterministic cash-flow diagnosis, then asks GPT-5.6 to challenge the scenario and design three reversible interventions.
+Most financial software optimizes a forecast. Risk Sovereignty starts with a different question: _if the world stops cooperating, what breaks first?_ It does not claim to predict the future. It lets a user construct an explicit bad future, reveals the first point at which the structure loses optionality, then asks GPT-5.6 to challenge the scenario and design three reversible interventions.
+
+The same founder-developed method now works across three distinct U.S. structures without pretending they share one balance sheet:
+
+- **Employer businesses:** sector, size context, sales, gross margin after COGS, fixed cash commitments, receivables, inventory, near-term debt, and customer concentration.
+- **Nonemployers / sole proprietors:** owner-only operating economics with client, platform, working-capital, and debt concentration.
+- **Individuals / households:** take-home income, essential spending, rent or mortgage, recurring debt payments, credit cards, other consumer debt, cash, accessible investments, and primary-income concentration.
 
 Built for the **OpenAI Build Week 2026 — Work & Productivity** track.
 
@@ -18,7 +24,7 @@ The model is deliberately not allowed to invent the financial truth.
 
 ```mermaid
 flowchart LR
-    A["Owner inputs<br/>business facts"] --> B["Visible stress<br/>assumptions"]
+    A["User inputs<br/>subject facts"] --> B["Visible stress<br/>assumptions"]
     B --> C["GPT-5.6 forced<br/>function call"]
     C --> D["Deterministic<br/>stress engine"]
     D --> E["Calculation trace<br/>and lifelines"]
@@ -28,7 +34,7 @@ flowchart LR
 
 - **Inputs are facts:** GPT-5.6 cannot silently rewrite them.
 - **Assumptions are visible:** revenue, margin, payment, customer, debt, and inventory shocks remain editable.
-- **Calculations are deterministic:** the local engine owns stressed cash flow, one-time shock, runway, stage, and the first failing lifeline.
+- **Calculations are deterministic:** the local engine owns stressed cash flow, immediate liquidity shock, economic impairment, runway, stage, and the first failing lifeline.
 - **AI owns bounded judgment:** it challenges assumptions, tests whether the exit is real, separates decision quality from outcome, and proposes a staged response.
 - **Evidence remains inspectable:** every action must cite a calculation-trace or assumption ID.
 - **Method compliance is checked:** a post-generation audit rejects invented evidence, missing sovereignty fields, or reordered action phases.
@@ -48,12 +54,27 @@ The server route uses the OpenAI Responses API in two passes:
 The API key is read only on the server from `OPENAI_API_KEY`. It is never bundled into the client.
 Successful reports expose the model name, workflow stages, and both OpenAI response IDs in the on-screen audit strip so judges can distinguish a real GPT-5.6 run from the deterministic fallback. The public demo route also applies request-size checks, a per-client demo rate limit, a 75-second upstream timeout, and no-store response headers.
 
+## U.S. market calibration
+
+The interface uses USD thousands, U.S. Census regions, and common U.S. structures. Employer-sector choices are drawn from the most numerous Census County Business Patterns sectors; employee bands are context only and are not presented as legal SBA size determinations. The nonemployer mode reflects the Census definition of businesses with no paid employees, most of which are self-employed sole proprietors. Household scenarios are grounded in the Federal Reserve's recurring categories of income volatility, job interruption, housing costs, credit-card and consumer debt, and major medical/vehicle/home expenses.
+
+No hidden industry, size, or regional multiplier changes a user's numbers. Public data selects understandable fields and presets; submitted facts remain authoritative.
+
+Primary references:
+
+- [U.S. Census Bureau — County Business Patterns API](https://www.census.gov/data/developers/data-sets/cbp-zbp/cbp-api.html)
+- [U.S. Census Bureau — 2023 Nonemployer Statistics](https://www.census.gov/newsroom/press-releases/2025/2023-nonemployer-statistics.html)
+- [Federal Reserve — Economic Well-Being of U.S. Households in 2025](https://www.federalreserve.gov/publications/2026-economic-well-being-of-us-households-in-2025-executive-summary.htm)
+- [Federal Reserve Bank of New York — Household Debt and Credit](https://www.newyorkfed.org/householdcredit/hhdc-iframe)
+- [Federal Reserve Small Business Credit Survey — 2025 Employer Firms](https://www.fedsmallbusiness.org/reports/survey/2025/2025-report-on-employer-firms)
+
 ## Product experience
 
 - Chinese and English interface
-- Seven editable industry demo presets
+- Three subject modes with 23 editable U.S. profile presets
+- Census-region and employee/household-structure context
 - Live “bad weather” sliders
-- Five lifelines: cash, margin, collection, leverage, concentration
+- Subject-aware lifelines: operating cash/margin/collection/leverage/concentration or household liquidity/income/housing/debt-service/income concentration
 - 6-month hard test and first-failure diagnosis
 - Four survival stages: signal, trend, contagion, emergency
 - GPT-5.6 AI red-team report with deterministic local fallback
@@ -104,7 +125,7 @@ This disclosure is intentional so judges can distinguish prior concept work from
 
 ## Responsible-use boundary
 
-Risk Sovereignty is decision support, not accounting, legal, lending, or investment advice. It does not predict the future. Users should validate assumptions and obtain qualified advice before consequential action.
+Risk Sovereignty is a cash-flow decision-support screen, not a GAAP financial statement or accounting, tax, legal, lending, credit, bankruptcy, benefits, or investment advice. It does not predict the future. Users should validate assumptions and obtain qualified advice before consequential action.
 
 For a public deployment, also set a hard monthly budget and notification threshold on the dedicated OpenAI API project. The in-app rate limiter is defense in depth, not a replacement for a platform spending cap.
 

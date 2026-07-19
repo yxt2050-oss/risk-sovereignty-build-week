@@ -28,7 +28,7 @@ test("server-renders the Risk Sovereignty experience", async () => {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>Risk Sovereignty \| AI Stress Test for Small Businesses<\/title>/i);
+  assert.match(html, /<title>Risk Sovereignty \| AI Stress Test for Businesses &amp; Households<\/title>/i);
   assert.match(html, /RISK SOVEREIGNTY/);
   assert.match(html, /What breaks first when the world stops cooperating/);
   assert.match(html, /GPT(?:-|‑|鈥)?5\.6/);
@@ -42,4 +42,6 @@ test("ships semantic controls and the audit boundary", async () => {
   assert.match(html, /id="ai"/);
   assert.match(html, /id="audit"/);
   assert.match(html, /Generate GPT(?:-|‑)?5\.6 survival report/);
+  assert.match(html, /Employer business/);
+  assert.match(html, /Individual \/ household/);
 });
