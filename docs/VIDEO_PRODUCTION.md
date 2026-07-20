@@ -8,7 +8,7 @@
 - Video: H.264, 30 fps
 - Audio: AAC, 44.1 kHz, English voiceover
 - Size: approximately 8.65 MB
-- Devpost requirement: publish through YouTube, Vimeo, or another Devpost-supported public video URL.
+- Public YouTube: <https://youtu.be/dCJk5bkXYL0>
 
 ## What changed in v2
 
@@ -46,6 +46,6 @@ The original 44.4-second overview remains intact. A 54.6-second real-workflow se
 - [x] Forced tool call and deterministic calculation visible
 - [x] No secret or account information shown
 - [x] API response IDs visible as proof
-- [ ] Upload final v2 file to a Devpost-supported public/unlisted video host
-- [ ] Replace the old Devpost video URL with the new v2 URL
-- [ ] Verify playback while signed out
+- [x] Upload final v2 file to YouTube as Public
+- [x] Replace the old Devpost video URL with the new v2 URL
+- [x] Verify the new public YouTube player is embedded on the public Devpost project page

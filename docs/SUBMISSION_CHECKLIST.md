@@ -10,6 +10,7 @@
 ## Final video
 
 - File: `H:\Sync\cowork\risk-sovereignty-demo-video\risk-sovereignty-build-week-judge-demo-v2.mp4`
+- Public YouTube: <https://youtu.be/dCJk5bkXYL0>
 - Duration: 1:38.99
 - Resolution: 1920×1080
 - Audio: English voiceover
@@ -51,7 +52,8 @@
 - [x] Real GPT-5.6 production call verified
 - [x] New 1:39 judge video generated
 - [x] `/feedback` session ID available
-- [ ] Upload the new v2 MP4 to a Devpost-supported public/unlisted host
-- [ ] Replace the existing Devpost video URL
-- [ ] Update Devpost story to the latest feature set
-- [ ] Review Devpost Preview after saving changes
+- [x] Upload the new v2 MP4 to YouTube as Public
+- [x] Replace the existing Devpost video URL
+- [x] Update Devpost story and judge instructions to the latest feature set
+- [x] Review the public Devpost page after saving changes
+- [x] Confirm submission remains `Submitted` with 5/5 steps done
