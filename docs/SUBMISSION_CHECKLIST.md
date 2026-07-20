@@ -1,47 +1,57 @@
-# Build Week Submission Checklist
+# Build Week Submission Checklist — Current State
 
 ## Public links
 
 - Demo: <https://risk-sovereignty.dewy-spool-9953.chatgpt.site>
 - Repository: <https://github.com/yxt2050-oss/risk-sovereignty-build-week>
-- Video file: `H:\Sync\cowork\risk-sovereignty-demo-video\risk-sovereignty-us-multi-subject-demo.mp4` (39.9 seconds, 1920×1080, silent English presentation with the asset-return lifeline)
+- Devpost: <https://devpost.com/software/risk-sovereignty-ai-stress-test-for-small-businesses>
 - `/feedback` session ID: `019f73fe-ce1a-71e0-8d61-664856e1aac6`
 
-Current handoff state:
+## Final video
 
-- Production site version 8 is public with the U.S. multi-subject and asset-return engines.
-- The complete Git history is published to the public GitHub repository, and local `main` matches `origin/main`.
-- Devpost Project Overview is saved and the 3:2 project thumbnail is uploaded.
-- Devpost Project Details still contains the earlier small-business story and cannot complete until the required video URL is supplied. The replacement text is in `docs/DEVPOST_STORY.md`.
-- Devpost Additional Info contains the public GitHub repository, judge path, and `/feedback` Session ID. The visible progress currently reads 2/5 because Project Details still lacks the video URL.
-- Timed English captions, a shot list, and a 2:49.9 draft English narration are ready.
+- File: `H:\Sync\cowork\risk-sovereignty-demo-video\risk-sovereignty-build-week-judge-demo-v2.mp4`
+- Duration: 1:38.99
+- Resolution: 1920×1080
+- Audio: English voiceover
+- Includes: Signal → Trend → Emergency slider workflow, plain-English user question, one verified GPT-5.6 result, three staged actions, and API proof.
+
+## Current product state
+
+- Production site version 11 is public.
+- Employer businesses, sole proprietors/nonemployers, and households use separate structures.
+- Asset income, carrying costs, income interruption, and asset repricing are modeled separately.
+- History Calibration accepts non-contiguous months and produces disclosed Guarded, Pessimistic, or Extreme anchors.
+- U.S. profile-specific ranges and floors replace a one-size-fits-all stress template.
+- Peer and official sources provide context but never overwrite user facts.
+- English and fully localized Chinese interfaces are available.
+- A real GPT-5.6 production call has been verified with forced tool use, strict structured output, deterministic calculations, semantic audit, and response IDs.
+- API usage is protected by request limits and a two-reports-per-visitor-per-day cap.
 
 ## Devpost positioning
 
 - Track: Work & Productivity
 - Team: Individual
-- Proposed project name: Risk Sovereignty: AI Stress Test for Real-World Survival
-- Proposed elevator pitch: A GPT-5.6 red team that simulates a bad future, finds what breaks first in a business, independent livelihood, or household, and preserves the right to exit in stages.
+- Project name: Risk Sovereignty: AI Stress Test for Real-World Survival
+- Elevator pitch: A GPT-5.6 red team that simulates a bad future, finds what breaks first across a business, independent livelihood, or household, and preserves the right to exit in stages.
 
-## Required final checks
+## Completion checks
 
 - [x] Public English-first demo with Chinese toggle
+- [x] Fully localized Chinese UI
 - [x] Deterministic engine and explicit AI boundary
+- [x] Historical calibration from sparse monthly data
+- [x] Profile-specific U.S. stress ranges and public references
+- [x] Asset-return and asset-repricing lifelines
 - [x] GPT-5.6 forced function-call implementation
-- [x] Strict structured report schema
-- [x] Server-side secret handling
-- [x] Build Week provenance disclosure
-- [x] Automated tests and production build
-- [x] English README and Judge Guide
-- [x] 3:2 project thumbnail under 5 MB
-- [x] English demo script, captions, shot list, and draft narration
-- [x] Production version 6 deployed with U.S. business, nonemployer, and household modes
-- [x] Source pushed to public GitHub repository
-- [x] Devpost project thumbnail uploaded
-- [x] Production `OPENAI_API_KEY` configured as a secret
-- [ ] Real GPT-5.6 production call verified
-- [x] Under-three-minute video regenerated for the asset-return release
-- [ ] Video uploaded as Unlisted and URL added to Devpost
-- [x] `/feedback` shared-session ID added
-- [ ] Devpost preview reviewed
-- [ ] Final submission explicitly approved by owner
+- [x] Strict structured report schema and semantic audit
+- [x] Server-side secret handling and API spending protection
+- [x] Public GitHub repository
+- [x] English README, Judge Guide, and updated Devpost story
+- [x] 3:2 project thumbnail
+- [x] Real GPT-5.6 production call verified
+- [x] New 1:39 judge video generated
+- [x] `/feedback` session ID available
+- [ ] Upload the new v2 MP4 to a Devpost-supported public/unlisted host
+- [ ] Replace the existing Devpost video URL
+- [ ] Update Devpost story to the latest feature set
+- [ ] Review Devpost Preview after saving changes

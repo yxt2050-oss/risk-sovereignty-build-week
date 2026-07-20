@@ -1,43 +1,51 @@
-# Demo video production sheet
+# Demo video production sheet — Judge Cut v2
 
-Target: **2:35–2:50**, English voiceover, public YouTube upload, 1080p, readable at normal playback speed.
+## Final artifact
 
-Use the narration in [`DEMO_SCRIPT.md`](DEMO_SCRIPT.md). Do not describe the fallback as an AI result. Record the final product segment only after the server secret is configured and the green audit strip shows `gpt-5.6`, `forced_function_call`, `deterministic_engine`, `strict_structured_output`, and two response IDs.
+- File: `H:\Sync\cowork\risk-sovereignty-demo-video\risk-sovereignty-build-week-judge-demo-v2.mp4`
+- Duration: 1:38.99
+- Resolution: 1920×1080
+- Video: H.264, 30 fps
+- Audio: AAC, 44.1 kHz, English voiceover
+- Size: approximately 8.65 MB
+- Devpost requirement: publish through YouTube, Vimeo, or another Devpost-supported public video URL.
 
-Prepared assets:
+## What changed in v2
 
-- [`DEMO_CAPTIONS.srt`](DEMO_CAPTIONS.srt) — timed English captions ending at 2:50.
-- [`DEMO_VOICEOVER_SSML.xml`](DEMO_VOICEOVER_SSML.xml) — reproducible Microsoft Zira narration source.
-- `submission-assets/risk-sovereignty-voiceover-draft.wav` — locally generated 2:49.9 narration draft; intentionally ignored by Git because it is a large binary production asset.
+The original 44.4-second overview remains intact. A 54.6-second real-workflow segment now demonstrates:
 
-## Shot list
+1. the same case at Signal with 36.0+ months of runway;
+2. the user dragging all seven bad-weather controls;
+3. the result moving to Trend at 9.3 months;
+4. further stress moving the result to Emergency at 0.0 months;
+5. the first failure changing from Concentration to Collection to Cash;
+6. one plain-English user question;
+7. one real GPT-5.6 forced-tool-call result;
+8. the causal chain, sovereignty gate, three staged actions, critical assumptions, and API proof.
 
-| Time | Picture | Required proof |
-| --- | --- | --- |
-| 0:00–0:12 | Social card, then hero and runway | Product name and one-sentence problem |
-| 0:12–0:35 | Change Manufacturing inputs | User facts remain editable; numbers recalculate immediately |
-| 0:35–0:58 | Move payment-delay, debt-call, and customer-loss sliders | Visible assumptions; first failure and runway change deterministically |
-| 0:58–1:18 | Scroll through lifelines and calculation trace | Formula IDs and separation of input / assumption / calculation / AI |
-| 1:18–1:55 | Add one line of business context and click the GPT-5.6 button | A real network-backed run; no fallback notice |
-| 1:55–2:22 | Show causal chain, three actions, assumption checks, and owner question | Evidence IDs on every action |
-| 2:22–2:40 | Hold on the audit strip | Model name, forced tool call, deterministic engine, strict output, response IDs |
-| 2:40–2:50 | End card | “Survival before maximization. Preserve the next move.” |
+## Exact demo question
 
-## Capture checklist
+> Revenue is falling and our largest customer pays late. What should I unwind first to survive without trapping the business?
 
-- Use the English interface and the Manufacturing sample.
-- Close unrelated tabs and notifications; never expose an API key or billing page.
-- Keep browser zoom at 100% and cursor movement deliberate.
-- Show one continuous real GPT-5.6 request, including loading state and returned report.
-- If the API fails, stop and recapture; never splice a fallback screen into the claimed AI run.
-- Voiceover may be AI-assisted, but it must explicitly explain how Codex and GPT-5.6 were used.
-- Upload as a **public** YouTube video and verify playback while signed out.
+## Reproducible production assets
 
-## Remaining user-only actions
+- Builder: `H:\Sync\cowork\risk-sovereignty-demo-video\build_interactive_judge_demo.py`
+- Interactive voiceover source: `H:\Sync\cowork\risk-sovereignty-demo-video\make_interactive_voiceover.ps1`
+- Captured frames: `H:\Sync\cowork\risk-sovereignty-demo-video\interactive-v2`
+- Segment contact sheet: `H:\Sync\cowork\risk-sovereignty-demo-video\interactive-v2\contact-sheet.png`
+- Original narrated overview: `H:\Sync\cowork\risk-sovereignty-demo-video\risk-sovereignty-us-demo-voiceover-final.mp4`
 
-1. Add funds and a hard budget to a dedicated OpenAI API project.
-2. Paste `OPENAI_API_KEY` directly into the secure hosting secret field—never into chat, source code, a screenshot, or the video.
-3. Authorize the GitHub push if Git Credential Manager asks.
-4. Upload the final MP4 to YouTube and paste the public URL into Devpost.
-5. Run `/feedback` in the primary Codex build task and paste the Session ID into Devpost.
-6. Review Preview, then explicitly approve the final Devpost submission.
+## Quality and safety checks
+
+- [x] Under three minutes
+- [x] 1080p and readable
+- [x] English voiceover
+- [x] Real slider-driven stage transitions
+- [x] One real GPT-5.6 request only
+- [x] Verified GPT-5.6 result, not fallback content
+- [x] Forced tool call and deterministic calculation visible
+- [x] No secret or account information shown
+- [x] API response IDs visible as proof
+- [ ] Upload final v2 file to a Devpost-supported public/unlisted video host
+- [ ] Replace the old Devpost video URL with the new v2 URL
+- [ ] Verify playback while signed out
