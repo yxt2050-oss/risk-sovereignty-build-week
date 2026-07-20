@@ -1421,6 +1421,7 @@ a {
 .case-card a b {
   color: #b8b1cb;
   font-weight: 600;
+  overflow-wrap: anywhere;
   text-align: right;
 }
 

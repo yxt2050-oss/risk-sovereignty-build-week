@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, type CSSProperties } from "react";
-import { casesForSubject } from "@/lib/caseStudies";
+import { casesForSubject, type StructuralCase } from "@/lib/caseStudies";
 import {
   CALIBRATION_SCENARIOS,
   CALIBRATION_SOURCES,
@@ -13,6 +13,7 @@ import {
   stressTemplateForProfile,
   type CalibrationScenario,
   type HistoryCalibrationResult,
+  type IndustryReference,
   type HistoryMetricKey,
   type MonthlyHistoryRow,
 } from "@/lib/historyCalibration";
@@ -453,6 +454,215 @@ const assetProfileNames: Record<AssetProfile, { zh: string; en: string }> = {
   "Mixed income portfolio": { zh: "混合收入型资产组合", en: "Mixed income portfolio" },
 };
 
+const chineseRegionNames: Record<BusinessInputs["region"], string> = {
+  Northeast: "美国东北部",
+  Midwest: "美国中西部",
+  South: "美国南部",
+  West: "美国西部",
+  "Multi-region / National": "跨区域／全美",
+};
+
+const chineseSizeBandNames: Record<BusinessInputs["sizeBand"], string> = {
+  "Nonemployer / owner-only": "无雇员／仅业主本人",
+  "Micro employer (1–9)": "微型雇主（1至9人）",
+  "Small employer (10–99)": "小型雇主（10至99人）",
+  "Midsize (100–499)": "中型雇主（100至499人）",
+  "Large (500+)": "大型雇主（500人以上）",
+  "Single adult": "单身成年人",
+  "Two-adult household": "双成人家庭",
+  "Family with dependents": "有受抚养人的家庭",
+};
+
+const chineseAssetProfileNames: Record<AssetProfile, string> = {
+  "None / cash only": "无收入型资产／仅持有现金",
+  "Rental real estate": "出租型房地产",
+  "Public stocks / ETFs": "上市股票／交易所交易基金（ETF）",
+  REITs: "房地产投资信托（REIT）",
+  "Private business interest": "非上市企业权益",
+  "Bonds / CDs / Treasuries": "债券／定期存单／美国国债",
+  "Mixed income portfolio": "混合收入型资产组合",
+};
+
+const chineseReferenceIdentity: Record<string, Pick<IndustryReference, "title" | "signal" | "period">> = {
+  "https://www.nfib.com/news/research-blog/main-street-is-okay-for-now/": {
+    title: "美国全国独立企业联合会小企业经济趋势（NFIB Small Business Economic Trends）",
+    signal: "每月调查业主报告的实际销售、价格、利润、薪酬、库存、信贷和预期。",
+    period: "每月",
+  },
+  "https://restaurant.org/research-and-media/research/restaurant-economic-insights/restaurant-performance-index/": {
+    title: "美国全国餐饮协会餐厅绩效指数（National Restaurant Association RPI）",
+    signal: "2026年5月餐厅绩效指数为100.1；50%的经营者报告同店销售额上升，29%报告客流量上升。",
+    period: "2026年5月",
+  },
+  "https://restaurant.org/research-and-media/research/inflation/": {
+    title: "美国全国餐饮协会成本观察（National Restaurant Association）",
+    signal: "协会估计，2019年至2026年间，美国普通餐厅的总费用累计上升36%。",
+    period: "2019年至2026年",
+  },
+  "https://www.agc.org/news/2026/07/15/construction-input-costs-remain-sharply-higher-year-ago-despite-june-decline-aluminum-copper-and-0": {
+    title: "美国总承包商协会成本与报价差（Associated General Contractors）",
+    signal: "2026年6月建筑投入价格同比上涨7.1%，同期投标价格上涨3.5%。",
+    period: "2026年6月",
+  },
+  "https://www.trucking.org/news-insights/ata-truck-tonnage-index-unchanged-april": {
+    title: "美国卡车运输协会货运吨位指数（American Trucking Associations Tonnage Index）",
+    signal: "2026年4月雇佣货运吨位环比持平；较2025年末上升4.7%，同比上升3.5%。",
+    period: "2026年4月",
+  },
+  "https://www.census.gov/manufacturing/m3/currentdata.html": {
+    title: "美国人口普查局制造业M3调查（U.S. Census M3）",
+    signal: "月度行业序列涵盖出货量、新订单、未交订单和库存，并提供季节调整数据。",
+    period: "每月",
+  },
+  "https://www.census.gov/retail/mrts/about_the_surveys.html": {
+    title: "美国人口普查局月度零售贸易调查（U.S. Census Monthly Retail Trade）",
+    signal: "月度估计涵盖不同零售业态的销售额、月末库存以及库存销售比。",
+    period: "每月",
+  },
+  "https://www.bea.gov/data/income-saving/personal-income": {
+    title: "美国经济分析局个人收入与支出（BEA Personal Income and Outlays）",
+    signal: "月度全国估计分别统计工资、经营收入、股息、利息、可支配收入、支出和储蓄。",
+    period: "每月",
+  },
+  "https://www.federalreserve.gov/publications/files/2025-report-economic-well-being-us-households-202605.pdf": {
+    title: "美联储家庭经济状况调查（Federal Reserve household well-being survey）",
+    signal: "年度调查衡量收入波动、应对紧急支出的能力、信贷、住房、退休准备和财务韧性。",
+    period: "每年",
+  },
+};
+
+const chineseReferenceUses: Record<string, string> = {
+  "Use it to challenge direction and breadth. A net share of owners is not your company's percentage change.": "用它核对变化方向和影响范围。业主净占比不等于你自己企业的百分比变化。",
+  "Compare your sales and traffic direction with operators nationally; do not copy the index level into a financial field.": "把自己的销售额和客流方向与全美经营者对照，但不要把指数点位直接填进财务字段。",
+  "Use this long-run cumulative figure as context, then enter your own month-to-month food, labor, occupancy, and operating cash costs.": "把长期累计涨幅作为背景；实际加压仍应填写自己逐月的食材、人工、场地和经营现金成本。",
+  "Use the spread as a margin-compression challenge, not as a substitute for your supplier invoices or awarded bids.": "把成本与报价的差距作为毛利受压参照，不能替代自己的供应商账单和中标报价。",
+  "Compare supplier and subcontractor cost growth with your own realized pricing power.": "把供应商和分包成本增速与自己真正实现的提价能力进行比较。",
+  "Use tonnage as a demand-volume cross-check; enter your own loads, revenue, fuel, insurance, and maintenance costs.": "用货运吨位核对需求量方向；载货量、收入、燃油、保险和维修成本仍填写自己的数据。",
+  "Use this only as a broad freight-demand comparison; gig-platform work can diverge sharply.": "它只能作为广义货运需求参照；平台接单业务可能与该指标明显背离。",
+  "Compare your direction with the closest NAICS series and keep your own sales, margin, DSO, and inventory facts primary.": "与最接近的北美行业分类（NAICS）序列比较方向，但销售、毛利、应收账期和库存仍以自己的事实为准。",
+  "Use seasonally adjusted industry movement to question whether a short partial-year swing is seasonal or structural.": "用季节调整后的行业变化判断短期波动更可能来自季节性还是结构性问题。",
+  "Use the closest retail category as context; channel mix, returns, ad spend, and platform fees remain company-specific.": "选择最接近的零售类别作为背景；渠道结构、退货、广告支出和平台费用仍由企业自身决定。",
+  "Use national direction as context only. Enter your actual after-tax deposits, essential outflows, debt payments, and cash asset income.": "全国趋势只作背景；请输入自己实际到账的税后收入、必要支出、债务还款和资产现金收入。",
+  "Use it to challenge buffer adequacy, not to replace your household balance sheet.": "用它检查家庭缓冲是否足够，而不是替代自己的家庭资产负债表。",
+};
+
+const chineseCalibrationSourceNames: Record<string, string> = {
+  "https://www.census.gov/retail/mrts/about_the_surveys.html": "美国人口普查局月度零售贸易调查",
+  "https://www.census.gov/manufacturing/m3/about_the_surveys/index.html": "美国人口普查局制造业出货、库存与订单调查",
+  "https://www.census.gov/construction/c30/about_the_survey.html": "美国人口普查局建筑支出调查",
+  "https://www.bls.gov/ppi/input-indexes/home.htm": "美国劳工统计局行业投入价格指数",
+  "https://www.bea.gov/data/income-saving/personal-income": "美国经济分析局个人收入统计",
+  "https://www.federalreserve.gov/publications/files/2025-report-economic-well-being-us-households-202605.pdf": "美联储家庭经济状况报告",
+};
+
+const chineseCaseCopy: Record<string, { geography: string; period: string; name: string; source: string; failure?: string }> = {
+  "svb-2023": { geography: "美国", period: "2023年", name: "硅谷银行（Silicon Valley Bank）", source: "美联储监察长办公室重大损失审查（Federal Reserve OIG material-loss review）" },
+  "wamu-2008": { geography: "美国", period: "2008年", name: "华盛顿互惠银行（Washington Mutual）", source: "美国联邦存款保险公司2008年倒闭史料（FDIC history of the 2008 failure）" },
+  "kodak-2012": { geography: "美国", period: "2012至2013年", name: "伊士曼柯达（Eastman Kodak）", source: "柯达2012年10-K年度报告／美国证券交易委员会备案（Kodak 2012 Form 10-K / SEC filing）", failure: "旧业务和遗留负担压缩流动性，最终进入美国《破产法》第11章重整（Chapter 11），而不是假装原有结构还能继续。" },
+  "carillion-2018": { geography: "欧洲", period: "2018年", name: "卡里利恩集团（Carillion）", source: "英国议会联合委员会报告（U.K. Parliament joint committee report）" },
+  "archegos-2021": { geography: "美国", period: "2021年", name: "阿奇戈斯资本／比尔·黄（Archegos / Bill Hwang）", source: "美国证券交易委员会起诉书与执法公告（U.S. SEC complaint and enforcement release）" },
+  "nfl-income-cliff": { geography: "美国", period: "1996至2003年样本", name: "美国职业橄榄球联盟短期高收入球员群体（NFL short-income-spike cohort）", source: "美国国家经济研究局工作论文21085（NBER Working Paper 21085）" },
+  "housing-double-trigger": { geography: "美国", period: "2007至2009年样本", name: "美国资不抵债房主群体（U.S. underwater-homeowner cohort）", source: "美联储消费者财务调查面板研究（Federal Reserve SCF panel research）" },
+};
+
+const chineseConfidenceNames = { low: "较低", medium: "中等", high: "较高" } as const;
+const chineseRhythmNames = { lower: "较平缓", moderate: "中等", higher: "较剧烈" } as const;
+
+const chineseCalibrationWarnings: Record<string, string> = {
+  "Some stress channels have fewer than two valid observations and were left unchanged.": "部分压力通道少于两个有效观测值，因此保持原值不变。",
+  "This profile is seasonal or cyclical. A partial-year trend may mix seasonality with deterioration, so the result is a stress anchor, not a forecast.": "该类型具有季节性或周期性。不到一年的趋势可能混合了季节变化与真实恶化，因此结果只是压力锚点，不是预测。",
+  "Sparse history produces a low-confidence anchor. Keep the suggested sliders editable and test a wider range.": "历史数据较少，压力锚点可信度偏低。请保留滑杆可调，并测试更宽的范围。",
+};
+
+const chineseTraceNames: Record<string, string> = {
+  stressed_revenue: "压力后营业收入",
+  stressed_fixed_costs: "压力后固定现金成本",
+  stressed_labor_income: "压力后劳动收入",
+  stressed_asset_income: "压力后资产收入",
+  monthly_cash_flow: "压力后月现金流",
+  liquidity_shock: "即时流动性冲击",
+  asset_impairment: "资产减值",
+  liquid_reserve_haircut: "流动储备折价",
+  income_asset_value_loss: "收入型资产价值损失",
+  survival_runway: "生存跑道",
+};
+
+const chineseTraceFormulas: Record<string, string> = {
+  stressed_revenue: "营业收入 ×（1－市场下滑）×（1－客户流失）",
+  stressed_fixed_costs: "固定现金支出 ×（1＋成本上涨）",
+  stressed_labor_income: "税后劳动收入 ×（1－收入下降）",
+  stressed_asset_income: "月资产收入 ×（1－资产收入下降）",
+  monthly_cash_flow: "压力后总收入－压力后必要支出－住房－债务－资产持有成本",
+  liquidity_shock: "收入中断、回款冻结、紧急支出与提前到期债务的合计冲击",
+  asset_impairment: "资产账面成本 × 减值比例（不直接计入现金跑道）",
+  liquid_reserve_haircut: "可动用储备 × 市场或流动性折价",
+  income_asset_value_loss: "收入型资产权益或市值 × 价值跌幅（经济损失，不等同现金流出）",
+  survival_runway: "扣除即时冲击后的可用现金 ÷ 每月现金缺口",
+};
+
+const chineseAssumptionNames: Record<string, string> = {
+  usd_thousands: "所有金额均以千美元计；除非另有标注，收入与支出均按月统计。",
+  cash_only_buffer: "应收账款和库存不能当作可以立即支出的现金。",
+  inventory_non_cash: "库存减值会降低经济价值，但不被视为即时现金流出。",
+  collection_freeze: "每延迟30天回款，大致会冻结一个月的当期收入；已知赊销占比时应使用实际比例。",
+  liquidity_screen: "这是现金流动性筛查，不是通用会计准则财务报表、纳税申报表或估值报告。",
+  runway_cap: "压力后现金流为正时显示为36个月以上，而不是无穷大。",
+  take_home_income: "收入指扣除工资税预扣后可以实际支出的家庭到手收入。",
+  liquid_investments: "可动用储备不包括另行填写的收入型资产；模型未计算退休账户提前支取罚金和税费。",
+  gross_asset_income: "月资产收入按资产债务、税费、保险、物业费、管理费、维修储备等持有成本扣除前填写。",
+  asset_income_can_stop: "租金、股息、分配或非上市企业派息可能下降或中断，但持有成本仍会继续。",
+  asset_value_non_cash: "资产价值下降会减少经济权益，但除非必须出售，否则不视为即时现金流出。",
+  treasury_boundary: "美国国债并非在所有情境下都绝对无风险：持有到期与提前出售不同，市场价格、通胀和再投资风险仍可能存在。",
+  debt_acceleration: "债务提前到期是一种压力情景，不是预测；除非合同条款或逾期触发条件具有现实可能，否则应填零。",
+  household_scope: "这是家庭现金流筛查，不构成个性化财务、税务、破产、福利或信贷建议。",
+};
+
+const chineseWorkflowNames: Record<string, string> = {
+  forced_function_call: "强制工具调用",
+  deterministic_engine: "确定性计算引擎",
+  strict_structured_output: "严格结构化输出",
+  latency_balanced_reasoning: "延迟与推理平衡",
+  methodology_semantic_audit: "方法论语义审计",
+  argument_integrity_verified: "参数完整性已验证",
+  submitted_input_preserved: "用户输入保持不变",
+};
+
+function localizedReference(reference: IndustryReference, locale: Locale): IndustryReference {
+  if (locale === "en") return reference;
+  const identity = chineseReferenceIdentity[reference.url];
+  return {
+    ...reference,
+    title: identity?.title ?? reference.title,
+    signal: identity?.signal ?? reference.signal,
+    period: identity?.period ?? reference.period,
+    use: chineseReferenceUses[reference.use] ?? reference.use,
+  };
+}
+
+function localizedCase(item: StructuralCase, locale: Locale) {
+  if (locale === "en") {
+    return {
+      geography: item.geography,
+      period: item.period,
+      name: item.name,
+      source: item.sourceLabel,
+      failure: item.failure.en,
+    };
+  }
+  const translated = chineseCaseCopy[item.id];
+  return {
+    geography: translated?.geography ?? item.geography,
+    period: translated?.period ?? item.period,
+    name: translated?.name ?? item.name,
+    source: translated?.source ?? item.sourceLabel,
+    failure: translated?.failure ?? item.failure.zh,
+  };
+}
+
+function chineseEvidenceName(id: string) {
+  return chineseTraceNames[id] ?? id;
+}
+
 const lifelineNames: Record<LifelineKey, { zh: string; en: string }> = {
   cash: { zh: "现金", en: "Cash" },
   margin: { zh: "毛利", en: "Margin" },
@@ -572,7 +782,7 @@ function localFallback(engine: EngineResult, locale: Locale): AIReport {
       },
     ],
     critical_assumptions: engine.assumptions.map((item) => ({
-      assumption: item.value,
+      assumption: zh ? (chineseAssumptionNames[item.id] ?? item.value) : item.value,
       failure_if_wrong: zh ? "跑道可能被高估。" : "Runway may be overstated.",
       how_to_verify: zh ? "用真实合同、账龄和变现周期核对。" : "Verify with contracts, aging, and actual liquidation time.",
     })),
@@ -776,17 +986,17 @@ export default function RiskSovereigntyApp() {
   }> = stressKeys.map((key) => ({
     key,
     max: profileStressRanges[key],
-    suffix: key === "paymentDelay" ? (locale === "zh" ? " 天" : " days") : key === "marginDrop" ? (locale === "zh" ? " 个点" : " pts") : key === "incomeInterruption" || key === "assetIncomeInterruption" ? (locale === "zh" ? " 个月" : " months") : key === "emergencyExpense" ? "k" : "%",
+    suffix: key === "paymentDelay" ? (locale === "zh" ? " 天" : " days") : key === "marginDrop" ? (locale === "zh" ? " 个百分点" : " pts") : key === "incomeInterruption" || key === "assetIncomeInterruption" ? (locale === "zh" ? " 个月" : " months") : key === "emergencyExpense" ? (locale === "zh" ? "千美元" : "k") : "%",
   }));
   const historyMetricKeys = historyMetricsForSubject(business.subjectType);
   const profileReferences = referencesForProfile(business.profile, business.subjectType);
   const historyMetricSuffix: Record<HistoryMetricKey, string> = {
-    revenue: "k",
+    revenue: locale === "zh" ? "千美元" : "k",
     grossMargin: "%",
-    costs: "k",
+    costs: locale === "zh" ? "千美元" : "k",
     receivableDays: locale === "zh" ? "天" : "d",
-    debtPayments: "k",
-    assetIncome: "k",
+    debtPayments: locale === "zh" ? "千美元" : "k",
+    assetIncome: locale === "zh" ? "千美元" : "k",
   };
   const stressDisplayName = (key: keyof StressInputs) => {
     if (key === "expenseIncrease" && business.subjectType !== "household") {
@@ -818,7 +1028,7 @@ export default function RiskSovereigntyApp() {
 
   return (
     <main className="app-shell">
-      <nav className="top-nav" aria-label="Primary">
+      <nav className="top-nav" aria-label={locale === "zh" ? "主导航" : "Primary"}>
         <a className="brand-lockup" href="#diagnosis">
           <span className="logo-orb">压</span>
           <span>{t.brand}</span>
@@ -826,12 +1036,12 @@ export default function RiskSovereigntyApp() {
         <div className="nav-tabs">
           {t.nav.map((label, index) => (
             <a key={label} className={index === 0 ? "active" : ""} href={`#${["diagnosis", "inputs", "storm", "history-calibration", "survival", "evidence", "ai", "audit"][index]}`}>
-              {label}
+              {locale === "zh" && index === 6 ? "智能红队" : label}
             </a>
           ))}
         </div>
         <div className="nav-spacer" />
-        <span className="model-pill">GPT‑5.6 · TOOL CALL</span>
+        <span className="model-pill">{locale === "zh" ? "GPT-5.6 · 工具调用" : "GPT-5.6 · TOOL CALL"}</span>
         <button className="language-toggle" onClick={switchLocale}>
           {locale === "zh" ? "EN" : "中文"}
         </button>
@@ -839,7 +1049,7 @@ export default function RiskSovereigntyApp() {
 
       <header className="hero-heading">
         <div>
-          <div className="eyebrow">{t.eyebrow}</div>
+          <div className="eyebrow">{locale === "zh" ? "风险主权 · 压力诊断系统" : t.eyebrow}</div>
           <h1>{t.title}</h1>
           <p>{t.subtitle}</p>
         </div>
@@ -889,11 +1099,11 @@ export default function RiskSovereigntyApp() {
             <strong>{(engine.subjectType === "household" ? householdLifelineNames : lifelineNames)[engine.firstFailure][locale]}</strong>
             <p>{locale === "zh" ? "不是最吓人的风险先发生，而是最薄弱的结构先失去选择。" : "The scariest risk is not always first. The weakest structure loses optionality first."}</p>
           </div>
-          <div className="truth-strip"><span>ENGINE</span><b>Deterministic numerical truth</b></div>
+          <div className="truth-strip"><span>{locale === "zh" ? "计算引擎" : "ENGINE"}</span><b>{locale === "zh" ? "确定性数值结果" : "Deterministic numerical truth"}</b></div>
         </aside>
       </section>
 
-      <div className="unit-note">{t.unit}</div>
+      <div className="unit-note">{locale === "zh" ? "金额单位：千美元；除非另有标注，所有流量均按月计算" : t.unit}</div>
 
       <section className="control-grid">
         <article className="glass-card control-card" id="inputs">
@@ -918,13 +1128,13 @@ export default function RiskSovereigntyApp() {
             <label className="number-field">
               <span>{t.sizeBand}</span>
               <select value={business.sizeBand} onChange={(event) => updateBusiness("sizeBand", event.target.value as BusinessInputs["sizeBand"])}>
-                {SIZE_BANDS_BY_SUBJECT[business.subjectType].map((size) => <option key={size}>{size}</option>)}
+                {SIZE_BANDS_BY_SUBJECT[business.subjectType].map((size) => <option key={size} value={size}>{locale === "zh" ? chineseSizeBandNames[size] : size}</option>)}
               </select>
             </label>
             <label className="number-field">
               <span>{t.region}</span>
               <select value={business.region} onChange={(event) => updateBusiness("region", event.target.value as BusinessInputs["region"])}>
-                {REGIONS.map((region) => <option key={region}>{region}</option>)}
+                {REGIONS.map((region) => <option key={region} value={region}>{locale === "zh" ? chineseRegionNames[region] : region}</option>)}
               </select>
             </label>
           </div>
@@ -933,7 +1143,7 @@ export default function RiskSovereigntyApp() {
               <label className="number-field" style={{ gridColumn: "1 / -1" }}>
                 <span>{t.assetProfile}</span>
                 <select value={business.assetProfile} onChange={(event) => updateBusiness("assetProfile", event.target.value as AssetProfile)}>
-                  {ASSET_PROFILES.map((profile) => <option key={profile} value={profile}>{assetProfileNames[profile][locale]}</option>)}
+                  {ASSET_PROFILES.map((profile) => <option key={profile} value={profile}>{locale === "zh" ? chineseAssetProfileNames[profile] : assetProfileNames[profile].en}</option>)}
                 </select>
               </label>
             </div>
@@ -976,7 +1186,7 @@ export default function RiskSovereigntyApp() {
             ))}
           </div>
           <div className="storm-equation">
-            <span>EXPOSURE</span>
+            <span>{locale === "zh" ? "风险敞口" : "EXPOSURE"}</span>
             <b>{locale === "zh" ? "风险不是概率 × 恐惧，而是敞口 × 没有退路" : "Risk is exposure multiplied by the absence of an exit"}</b>
           </div>
         </article>
@@ -1050,21 +1260,24 @@ export default function RiskSovereigntyApp() {
               {historyMetricKeys.map((metric) => (
                 <article key={metric}>
                   <strong>{historyText.metrics[metric]}</strong>
-                  <p>{historyText.guides[metric]}</p>
+                  <p>{locale === "zh" ? historyText.guides[metric].replaceAll("POS", "收银系统（POS）").replaceAll("COGS", "销货成本（COGS）") : historyText.guides[metric]}</p>
                 </article>
               ))}
             </div>
           </details>
           <aside className="benchmark-panel">
             <div><b>{historyText.benchmarkTitle}</b><span>{historyText.benchmarkSubtitle}</span></div>
-            {profileReferences.map((reference) => (
-              <a href={reference.url} target="_blank" rel="noreferrer" key={`${reference.title}-${reference.period}`}>
-                <span>{reference.period}</span>
-                <strong>{reference.title}</strong>
-                <p>{reference.signal}</p>
-                <em>{reference.use}</em>
-              </a>
-            ))}
+            {profileReferences.map((reference) => {
+              const display = localizedReference(reference, locale);
+              return (
+                <a href={reference.url} target="_blank" rel="noreferrer" key={`${reference.title}-${reference.period}`}>
+                  <span>{display.period}</span>
+                  <strong>{display.title}</strong>
+                  <p>{display.signal}</p>
+                  <em>{display.use}</em>
+                </a>
+              );
+            })}
           </aside>
         </div>
         <div className="history-table-wrap">
@@ -1113,9 +1326,9 @@ export default function RiskSovereigntyApp() {
           <div className="history-result">
             <div className="history-result-heading">
               <div>
-                <span>{historyText.confidence}: <b data-confidence={calibration.confidence}>{calibration.confidence}</b></span>
-                <span>{historyText.rhythm}: <b>{calibration.industryRhythm}</b></span>
-                <span>×{calibration.industryFactor.toFixed(2)} profile</span>
+                <span>{historyText.confidence}: <b data-confidence={calibration.confidence}>{locale === "zh" ? chineseConfidenceNames[calibration.confidence] : calibration.confidence}</b></span>
+                <span>{historyText.rhythm}: <b>{locale === "zh" ? chineseRhythmNames[calibration.industryRhythm] : calibration.industryRhythm}</b></span>
+                <span>×{calibration.industryFactor.toFixed(2)} {locale === "zh" ? "画像系数" : "profile"}</span>
               </div>
               <button className="primary-button" disabled={!calibration.metrics.length} onClick={applyHistoryAnchor}>{historyText.apply}</button>
             </div>
@@ -1138,7 +1351,7 @@ export default function RiskSovereigntyApp() {
             {!!calibration.warnings.length && (
               <div className="history-warnings">
                 <b>{historyText.warnings}</b>
-                {calibration.warnings.map((warning) => <p key={warning}>{warning}</p>)}
+                {calibration.warnings.map((warning) => <p key={warning}>{locale === "zh" ? (chineseCalibrationWarnings[warning] ?? warning) : warning}</p>)}
               </div>
             )}
           </div>
@@ -1147,7 +1360,7 @@ export default function RiskSovereigntyApp() {
         <details className="history-sources">
           <summary>{historyText.sources}</summary>
           <div>
-            {CALIBRATION_SOURCES.map((source) => <a key={source.url} href={source.url} target="_blank" rel="noreferrer">{source.label} ↗</a>)}
+            {CALIBRATION_SOURCES.map((source) => <a key={source.url} href={source.url} target="_blank" rel="noreferrer">{locale === "zh" ? (chineseCalibrationSourceNames[source.url] ?? source.label) : source.label} ↗</a>)}
           </div>
         </details>
       </section>
@@ -1173,29 +1386,32 @@ export default function RiskSovereigntyApp() {
           <p>{t.evidenceSub}</p>
         </div>
         <div className="case-grid">
-          {structuralCases.map((item) => (
-            <article className="case-card" key={item.id}>
-              <div className="case-heading">
-                <div><span>{item.geography}</span><span>{item.period}</span></div>
-                <h3>{item.name}</h3>
-              </div>
-              <dl>
-                <div><dt>{t.evidenceLabels.failure}</dt><dd>{item.failure[locale]}</dd></div>
-                <div><dt>{t.evidenceLabels.trap}</dt><dd>{item.trap[locale]}</dd></div>
-                <div><dt>{t.evidenceLabels.lesson}</dt><dd>{item.lesson[locale]}</dd></div>
-              </dl>
-              <a href={item.sourceUrl} target="_blank" rel="noreferrer">
-                <span>{t.evidenceLabels.source}</span>
-                <b>{item.sourceLabel}</b>
-              </a>
-            </article>
-          ))}
+          {structuralCases.map((item) => {
+            const display = localizedCase(item, locale);
+            return (
+              <article className="case-card" key={item.id}>
+                <div className="case-heading">
+                  <div><span>{display.geography}</span><span>{display.period}</span></div>
+                  <h3>{display.name}</h3>
+                </div>
+                <dl>
+                  <div><dt>{t.evidenceLabels.failure}</dt><dd>{display.failure}</dd></div>
+                  <div><dt>{t.evidenceLabels.trap}</dt><dd>{item.trap[locale]}</dd></div>
+                  <div><dt>{t.evidenceLabels.lesson}</dt><dd>{item.lesson[locale]}</dd></div>
+                </dl>
+                <a href={item.sourceUrl} target="_blank" rel="noreferrer">
+                  <span>{t.evidenceLabels.source}</span>
+                  <b>{display.source}</b>
+                </a>
+              </article>
+            );
+          })}
         </div>
       </section>
 
       <section className="glass-card section-card ai-section" id="ai">
         <div className="ai-heading">
-          <div className="section-title stacked"><h2>{t.aiTitle}</h2><p>{t.aiSub}</p></div>
+          <div className="section-title stacked"><h2>{locale === "zh" ? "⑥ GPT-5.6 智能红队" : t.aiTitle}</h2><p>{t.aiSub}</p></div>
           <button className="primary-button" onClick={generateReport} disabled={loading}>
             {loading ? t.generating : t.generate}
           </button>
@@ -1220,7 +1436,7 @@ export default function RiskSovereigntyApp() {
               {report.causal_chain.map((item) => (
                 <div className="causal-step" key={`${item.order}-${item.event}`}>
                   <span>{String(item.order).padStart(2, "0")}</span>
-                  <p><b>{item.event}</b>{item.consequence}<code>{item.evidence_id}</code></p>
+                  <p><b>{item.event}</b>{item.consequence}<code title={item.evidence_id}>{locale === "zh" ? chineseEvidenceName(item.evidence_id) : item.evidence_id}</code></p>
                 </div>
               ))}
             </article>
@@ -1260,11 +1476,11 @@ export default function RiskSovereigntyApp() {
                 <article key={`${action.phase}-${index}`}>
                   <div className="action-top"><span>0{index + 1}</span><b>{action.action}</b></div>
                   <dl>
-                    <div><dt>TRIGGER</dt><dd>{action.trigger}</dd></div>
-                    <div><dt>PARTIAL EXIT</dt><dd>{action.partial_exit}</dd></div>
-                    <div><dt>NEXT OPTION</dt><dd>{action.preserved_option}</dd></div>
+                    <div><dt>{locale === "zh" ? "触发条件" : "TRIGGER"}</dt><dd>{action.trigger}</dd></div>
+                    <div><dt>{locale === "zh" ? "分段退出" : "PARTIAL EXIT"}</dt><dd>{action.partial_exit}</dd></div>
+                    <div><dt>{locale === "zh" ? "保留选择" : "NEXT OPTION"}</dt><dd>{action.preserved_option}</dd></div>
                   </dl>
-                  <div className="evidence-tags">{action.evidence_ids.map((id) => <code key={id}>{id}</code>)}</div>
+                  <div className="evidence-tags">{action.evidence_ids.map((id) => <code key={id} title={id}>{locale === "zh" ? chineseEvidenceName(id) : id}</code>)}</div>
                 </article>
               ))}
             </div>
@@ -1283,11 +1499,11 @@ export default function RiskSovereigntyApp() {
         {audit && (
           <div className="api-audit">
             <span>{audit.model}</span>
-            <code>{audit.methodology}</code>
-            {audit.workflow.map((step) => <code key={step}>{step}</code>)}
-            <small>{t.apiProof}</small>
-            {audit.toolResponseId && <code title="Forced tool-call response ID">tool:{audit.toolResponseId}</code>}
-            {audit.reportResponseId && <code title="Structured report response ID">report:{audit.reportResponseId}</code>}
+            <code>{locale === "zh" ? "风险主权方法论" : audit.methodology}</code>
+            {audit.workflow.map((step) => <code key={step} title={step}>{locale === "zh" ? (chineseWorkflowNames[step] ?? step) : step}</code>)}
+            <small>{locale === "zh" ? "接口调用凭证" : t.apiProof}</small>
+            {audit.toolResponseId && <code title="Forced tool-call response ID">{locale === "zh" ? "工具调用" : "tool"}:{audit.toolResponseId}</code>}
+            {audit.reportResponseId && <code title="Structured report response ID">{locale === "zh" ? "报告" : "report"}:{audit.reportResponseId}</code>}
           </div>
         )}
       </section>
@@ -1296,19 +1512,19 @@ export default function RiskSovereigntyApp() {
         <div className="section-title stacked"><h2>{t.auditTitle}</h2><p>{t.auditSub}</p></div>
         <div className="audit-grid">
           {t.auditLayers.map(([tag, title, description]) => (
-            <article key={tag}><span>{tag}</span><h3>{title}</h3><p>{description}</p></article>
+            <article key={tag}><span>{locale === "zh" ? ({ INPUT: "输入", ASSUMPTION: "假设", CALC: "计算", AI: "智能判断" } as Record<string, string>)[tag] ?? tag : tag}</span><h3>{title}</h3><p>{locale === "zh" ? description.replaceAll("AI", "人工智能") : description}</p></article>
           ))}
         </div>
         <div className="calculation-trace">
           <div className="micro-heading">{t.formula}</div>
           {engine.calculationTrace.map((item) => (
-            <div key={item.id}><code>{item.id}</code><span>{item.formula}</span><b>{item.value}</b></div>
+            <div key={item.id}><code title={item.id}>{locale === "zh" ? chineseEvidenceName(item.id) : item.id}</code><span>{locale === "zh" ? (chineseTraceFormulas[item.id] ?? item.formula) : item.formula}</span><b>{item.value}</b></div>
           ))}
         </div>
       </section>
 
       <footer>
-        <b>RISK SOVEREIGNTY</b>
+        <b>{locale === "zh" ? "风险主权" : "RISK SOVEREIGNTY"}</b>
         <span>{t.disclaimer}</span>
         <span>{locale === "zh" ? "不预测未来。控制暴露，保留退出权。" : "Do not predict the future. Control exposure. Preserve an exit."}</span>
       </footer>
